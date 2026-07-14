@@ -1,0 +1,47 @@
+name: docs-ci
+
+# Validation only — sanitization gate + strict build. No deployment here.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Sanitization sweep (fail on internal identifiers)
+        env:
+          # The full forbidden-identifier regex (internal node names, operator
+          # username, etc.) is stored as a repo secret so those identifiers never
+          # appear in this public workflow file. Configure at:
+          #   Settings > Secrets and variables > Actions > SANITIZATION_PATTERN
+          # If unset, a safe fallback of IP-range patterns only is used (nothing
+          # identifying: no node names, no usernames, no paths).
+          SANITIZATION_PATTERN: ${{ secrets.SANITIZATION_PATTERN }}
+        run: |
+          set -euo pipefail
+          FALLBACK='(100\.[0-9]+\.[0-9]+\.[0-9]+|10\.20\.[0-9]+\.[0-9]+)'
+          PATTERN="${SANITIZATION_PATTERN:-$FALLBACK}"
+          SRC="${SANITIZATION_PATTERN:+secret}"; SRC="${SRC:-structural-fallback}"
+          echo "Sanitization pattern source: ${SRC}"
+          if grep -rniE "$PATTERN" docs mkdocs.yml README.md; then
+            echo "::error::Sanitization sweep found forbidden identifiers. Remove them before merging."
+            exit 1
+          fi
+          echo "Sanitization sweep clean."
+
+      - name: Strict build
+        run: mkdocs build --strict

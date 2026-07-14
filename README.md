@@ -62,3 +62,22 @@ The platform demo at [getkeystone.ai/platform/](https://getkeystone.ai/platform/
 is the employer-facing narrative; it links into these docs for architecture and
 extension detail. See [`docs/migration-notes.md`](docs/migration-notes.md) for
 how the platform page should reference this site.
+
+## Validation
+
+CI (`.github/workflows/docs-ci.yml`) runs on every push and pull request:
+
+1. a **sanitization sweep** that fails the build if any internal identifier
+   (node name, Tailnet/LAN IP, operator path) appears, and
+2. `mkdocs build --strict`.
+
+Run both locally before committing.
+
+## Expected publish target
+
+The intended public URL is **`getkeystone.ai/docs/`** (the platform page links
+into these docs with root-relative `/docs/...` paths). `docs.getkeystone.ai` is a
+supported alternative — see [`PUBLICATION_CHECKLIST.md`](PUBLICATION_CHECKLIST.md)
+for the deployment options, URL-target trade-offs, and the preflight steps
+(including removing internal-only files) to run before the first public push.
+
