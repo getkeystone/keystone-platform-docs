@@ -75,9 +75,10 @@ Run both locally before committing.
 
 ## Expected publish target
 
-The intended public URL is **`getkeystone.ai/docs/`** (the platform page links
-into these docs with root-relative `/docs/...` paths). `docs.getkeystone.ai` is a
-supported alternative — see [`PUBLICATION_CHECKLIST.md`](PUBLICATION_CHECKLIST.md)
-for the deployment options, URL-target trade-offs, and the preflight steps
-(including removing internal-only files) to run before the first public push.
+The docs are published at **`https://docs.getkeystone.ai/`** — a dedicated
+Cloudflare Pages subdomain (chosen to avoid the `getkeystone.ai/docs/` marketing
+catch-all). The platform page and org profile link to absolute
+`https://docs.getkeystone.ai/...` URLs. See
+[`PUBLICATION_CHECKLIST.md`](PUBLICATION_CHECKLIST.md) for the deployment steps and
+the preflight (including removing internal-only files) before the first deploy.
 

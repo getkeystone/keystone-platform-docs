@@ -40,15 +40,17 @@ git push -u origin main
 sanitization gate). It intentionally does not deploy — wire deployment in as a
 separate, deliberate step.
 
-## URL target options
+## URL target — decided: `docs.getkeystone.ai` (Option A)
 
-| Target | Requirement | Recommendation |
-|---|---|---|
-| **`getkeystone.ai/docs/`** | The `getkeystone.ai` origin must route `/docs/*` to this site's build (Cloudflare Pages path, or a build that emits into the marketing site's `/docs`). | **Preferred.** The `/platform/` page links use root-relative `/docs/...` paths, which resolve cleanly here. |
-| **`docs.getkeystone.ai`** | A dedicated CNAME/subdomain. | Works, but then the `/platform/` links must be changed to absolute `https://docs.getkeystone.ai/...`. |
+The docs are served from a dedicated Cloudflare Pages subdomain,
+`https://docs.getkeystone.ai/`. This was chosen over path routing at
+`getkeystone.ai/docs/` because a dedicated deployment has **zero catch-all risk**
+(the current `getkeystone.ai/docs/*` is a marketing soft-200) and is the fastest
+operator-safe path. The `/platform/` and org-profile links have been repointed to
+absolute `https://docs.getkeystone.ai/...` URLs (held commits).
 
-Set `site_url` in `mkdocs.yml` to the chosen base before deploy. Current value
-assumes `getkeystone.ai/docs/`.
+`site_url` in `mkdocs.yml` is set to `https://docs.getkeystone.ai/`. The full
+cutover steps are in `DOCS_DOMAIN_CUTOVER_PLAN.md` (release-ops working area).
 
 ## Preflight — before the first public push
 
