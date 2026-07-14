@@ -1,0 +1,51 @@
+site_name: Keystone Applied Intelligence — Documentation
+site_description: >-
+  Governed AI platform for regulated enterprises. Architecture, extensions,
+  evaluation methodology, and access policy — the public documentation surface.
+site_url: https://getkeystone.ai/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - content.code.copy
+    - search.highlight
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+
+# migration-notes.md is an internal planning note kept in-repo but not published.
+exclude_docs: |
+  migration-notes.md
+
+nav:
+  - Overview: index.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Substrate model: architecture/substrate.md
+  - Extensions:
+      - Overview: extensions/index.md
+      - Engage: extensions/engage.md
+      - Counsel: extensions/counsel.md
+      - Verify: extensions/verify.md
+  - Evaluation: evaluation/index.md
+  - Design:
+      - Contact-center heritage: design/heritage.md
+  - Access: access.md
+  - About: about.md
