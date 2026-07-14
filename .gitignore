@@ -13,3 +13,6 @@ env/
 Thumbs.db
 .vscode/
 .idea/
+
+# Internal ops doc — never publish in this repo
+TECHNICAL_REVIEW_ACCESS_POLICY.md
