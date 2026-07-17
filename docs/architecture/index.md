@@ -19,7 +19,7 @@ platform rather than three applications that happen to share a database.
 │  Shared substrate                                                │
 │    agents registry          task state machine (9 states)        │
 │    hash-chained audit        NATS JetStream event bus            │
-│    MCP tool exposure         cost-aware dispatch                 │
+│    query-time authz          cost-aware dispatch                 │
 └────────────────────────────────────────────────────────────────┘
                           │  contracts talk to infrastructure
                           ▼
@@ -40,8 +40,8 @@ Three properties hold this model together:
   path instead of scattered through application code.
 
 - **Extensions do not rebuild shared capabilities.** The agents registry, task
-  state machine, audit ledger, event bus, tool exposure, and cost-aware dispatch
-  live in the substrate once. Extensions consume them; they do not each carry a
+  state machine, audit ledger, event bus, query-time authorization, and
+  cost-aware dispatch live in the substrate once. Extensions consume them; they do not each carry a
   private roster, a private audit format, or a private budget mechanism. Adding
   an extension is a matter of consuming existing contracts, not re-implementing
   the platform.
@@ -62,8 +62,8 @@ choices, not runtime configuration — they hold whether or not any given model
 behaves as expected.
 
 1. **Structural governance over heuristic guardrails.** The primary controls are
-   structural: authorization checks that fail closed, tool scopes enforced before
-   dispatch, human-approval gates on irreversible actions, and tamper-evident
+   structural: authorization checks that fail closed and run before generation,
+   severity-tier human review on high-risk interactions, and integrity-checked
    audit records. Model-based filters exist as defense in depth, but they are
    never the sole control. A prompt that talks its way past a model has not talked
    its way past a database predicate.
@@ -79,15 +79,16 @@ behaves as expected.
    state on ambiguity is refusal with an audited reason, not a best-effort
    response.
 
-4. **Tamper-evident, hash-chained audit trail.** Every retrieval, tool call,
-   authorization decision, and escalation writes an append-only, HMAC-verified
-   audit entry. Each entry carries the hash of the entry before it, so any edit or
-   deletion breaks the chain and is detectable on replay. The audit trail is
-   evidence, not a log that can be quietly rewritten.
+4. **Hash-chained audit trail.** Every retrieval, authorization decision, and
+   escalation writes an append-only, SHA-256 hash-chained audit entry (the shared
+   substrate is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record). Each
+   entry carries the hash of the entry before it, and `verify_chain` walks the
+   full ledger on replay, so an edit or deletion breaks the chain and is
+   detectable. The audit trail is evidence, not a log that can be quietly rewritten.
 
 5. **Sealed failing runs preserved alongside passing runs.** Evaluation runs are
-   sealed as immutable artifacts, and a failing run is not deleted when a passing
-   run replaces it. Both are kept. As a published example, the sealed failing
+   sealed as durable artifacts in the ledger, and a failing run is not deleted
+   when a passing run replaces it. Both are kept. As a published example, the sealed failing
    baseline `keystone-core/agent-v0` (66 cases, 4 real bugs surfaced) sits next to
    the passing `keystone-core/agent-v1` (186 cases, 558 executions, 0 failures).
    The failing run is the evidence that the methodology finds real bugs. See the

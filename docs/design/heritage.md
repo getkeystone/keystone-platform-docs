@@ -32,7 +32,7 @@ is a language model instead of a hand-built dialog engine.
 |-------------------------------------------|------------------------------------------------------|
 | Severity-tier HITL routing                | Bot-to-human escalation with severity classification |
 | Per-step evidence gating                  | Frame-based dialog slot validation                   |
-| HMAC action audit chain                   | Contact-center compliance logging                    |
+| Hash-chained action audit chain           | Contact-center compliance logging                    |
 | Fail-closed at retrieval                  | Confidence-threshold escalation in bot deployments   |
 | Published failing run next to passing run | Contact-center quality management                    |
 | Local-first deployment with local models  | Regulated contact-center deployment reality          |
@@ -53,7 +53,7 @@ destination, and passenger. Keystone gates each step of an agent's plan the same
 way: a step does not execute until the evidence it depends on is present and
 checked.
 
-**HMAC action audit chain ← contact-center compliance logging.** Regulated
+**Hash-chained action audit chain ← contact-center compliance logging.** Regulated
 contact centers logged every automated action against a customer record in a
 form that could be reconstructed and inspected. Keystone hardens that into an
 append-only, hash-chained audit ledger: each entry carries the hash of the entry
@@ -106,7 +106,7 @@ the patterns obsolete. It makes them mandatory.
 
 So Keystone keeps the mechanisms and rebuilds their implementation for the new
 substrate: severity routing over agent actions, evidence gating over generated
-plans, a hash-chained ledger over tool calls, fail-closed retrieval over model
+plans, a hash-chained ledger over governed actions, fail-closed retrieval over model
 grounding, published failing runs over the evaluation suite, and local-first
 deployment over sensitive data. The LLM era needs this rigor. Rediscovering it
 from scratch is unnecessary.

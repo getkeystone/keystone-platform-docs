@@ -1,9 +1,9 @@
 # What is public vs private
 
-Keystone draws a deliberate line between what is open to inspection and what is
-proprietary. The architecture, evaluation methodology, and design rationale are
-public. The implementation is not. This page states exactly where that line
-sits and how to request access to the private side for technical review.
+Keystone's five repositories are public: the architecture, evaluation
+methodology, design rationale, and the source. Deployment configuration and
+infrastructure detail remain private. This page states exactly where that line
+sits.
 
 ## What is public
 
@@ -14,8 +14,8 @@ The following are publicly available and inspectable:
   [design heritage](design/heritage.md), and sanitized
   [evaluation summaries](evaluation/index.md).
 - **The evaluation framework** — keystone-verify is open source. Inspect the
-  profile system, the assertion vocabulary, and the sealed-artifact
-  methodology. [GitHub →](https://github.com/getkeystone/keystone-verify)
+  profile system, the assertion vocabulary, and the structured-artifact
+  reporter. [GitHub →](https://github.com/getkeystone/keystone-verify)
 - **The published evaluation ledger** — keystone-ledger holds the sealed
   passing and failing artifacts behind every published baseline, with full
   results and metadata. [GitHub →](https://github.com/getkeystone/keystone-ledger)
@@ -24,35 +24,34 @@ The following are publicly available and inspectable:
 
 ## What is private
 
-The following are proprietary:
+The following remain private:
 
-- **Source code** for keystone-engage, keystone-counsel, the keystone-gov
-  substrate, the keystone-demo deployment, and the operator console.
 - **Internal infrastructure details** — node identifiers, network topology,
   addressing, and deployment-specific configuration.
 - **Internal evaluation artifacts** that have not been published to the ledger.
 - **Operational and security details** — authentication configuration, secrets
   management, and monitoring specifics.
+- **The keystone-demo deployment and operator console.**
 
 ## Why it is private
 
 Keystone is a platform under active development. The source code represents
-eighteen months of independent engineering on governed AI infrastructure.
+independent engineering on governed AI infrastructure since 2024.
 
-The split is intentional, not defensive. The architecture, evaluation
-methodology, and design rationale are public because they are the substance of
-the work — the parts worth reviewing on their merits. The implementation is
-private because it is the product.
+The split is intentional. The architecture, evaluation methodology, design
+rationale, and source are public because they are the substance of the work,
+the parts worth reviewing on their merits. Deployment and infrastructure detail
+stay private because they are operational, not architectural.
 
-## Request access for technical review
+## The public repositories
 
-Read-only access to the private repositories is available on request for
-interview-depth technical review.
+All five repositories are public and inspectable:
 
-- **Intended audience** — hiring managers, staff engineers, and technical
-  evaluators.
-- **Scope** — read-only. Access is for review, not modification.
-- **Response time** — within 24 hours.
+- [keystone-engage](https://github.com/getkeystone/keystone-engage) — governed conversational agent
+- [keystone-counsel](https://github.com/getkeystone/keystone-counsel) — authorization-first retrieval
+- [keystone-gov](https://github.com/getkeystone/keystone-gov) — governed RAG reference implementation
+- [keystone-verify](https://github.com/getkeystone/keystone-verify) — evaluation framework
+- [keystone-ledger](https://github.com/getkeystone/keystone-ledger) — published evaluation ledger
 
 Contact: [arnaldosepulveda.com](https://arnaldosepulveda.com) ·
 [LinkedIn](https://linkedin.com/in/arnaldosepulveda)

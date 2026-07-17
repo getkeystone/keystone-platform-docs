@@ -13,9 +13,10 @@ proves the other two behave.
 ## The three extensions
 
 **keystone-engage.** Governed conversational agent for regulated customer
-interaction. Multi-agent coordination with tempo heterogeneity, per-agent audit
-trail, severity-tier human-in-the-loop routing, and cost-aware budget
-enforcement.
+interaction. The served path is a single governed agent; a multi-agent
+coordinator with tempo heterogeneity and per-agent audit trails is implemented
+and available behind a config flag, not the default served route. Severity-tier
+human-in-the-loop routing and a cost-aware dispatch interface are served.
 
 **keystone-counsel.** Authorization-first retrieval for legal and financial
 advisory content. Classification-aware vector-similarity ACL filtering enforced
@@ -24,7 +25,8 @@ insufficient confidence.
 
 **keystone-verify.** Standalone evaluation harness, endpoint-agnostic. Runs
 against any HTTP endpoint over a structured profile and assertion vocabulary.
-Sealed failing runs preserved alongside sealed passing runs.
+It writes structured, reproducible runs; failing runs are preserved alongside
+passing runs, and the ledger seals and versions them.
 [View on GitHub →](https://github.com/getkeystone/keystone-verify)
 
 ## The shared substrate
@@ -38,14 +40,17 @@ governance work so the extensions do not have to reimplement it:
 - **Task state machine.** Explicit ownership, validated transitions, and a
   takeover protocol so long-running tasks stay recoverable rather than silently
   orphaned.
-- **Hash-chained audit ledger.** Append-only, HMAC-verified entries. Each entry
-  chains to the previous one, so tampering breaks the chain and is detectable on
-  replay.
+- **Hash-chained audit ledger.** Append-only, SHA-256 hash-chained entries (the
+  shared substrate is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record).
+  Each entry chains to the previous one, and `verify_chain` walks the full ledger
+  on replay, so a break in the chain is detectable.
 - **NATS JetStream event bus.** Carries task lifecycle events for observers.
   This is the observability path, distinct from the request path.
-- **MCP-exposed tools with agent-scoped authorization.** Tool access is scoped
-  per agent identity and enforced at the substrate before dispatch. A model that
-  requests a tool it lacks scope for is refused structurally, not by the model.
+- **Query-time authorization.** Access control enforced before retrieval. Engage
+  uses a corpus-scope ACL (role to allowed corpora, fail-closed); Counsel enforces
+  a classification and client-isolation `WHERE` clause in the retrieval query, so
+  unauthorized rows never return. An MCP server entry point is scaffolded but not
+  wired to the served path.
 - **Cost-aware dispatch.** Every dispatch carries a budget and a tempo target;
   every audit entry records tokens, model, and cost. Dispatch can short-circuit
   when a budget is exhausted, and the short-circuit is a recorded event.
@@ -67,17 +72,19 @@ the LLM substrate. See [contact-center heritage →](design/heritage.md).
 
 ## What is public vs private
 
-| Surface                                          | Status  |
-|--------------------------------------------------|---------|
-| Platform documentation (this site)               | Public  |
-| keystone-verify — evaluation framework           | Public  |
-| keystone-ledger — published evaluation ledger    | Public  |
-| Source for the substrate and the extensions      | Private |
+| Surface                                           | Status  |
+|---------------------------------------------------|---------|
+| Platform documentation (this site)                | Public  |
+| keystone-ledger — published evaluation ledger     | Public  |
+| keystone-verify — evaluation framework            | Public  |
+| keystone-engage — governed conversational agent   | Public  |
+| keystone-gov — governed RAG reference             | Public  |
+| keystone-counsel — authorization-first retrieval  | Public  |
 | Deployment configuration and infrastructure detail| Private |
 
-The architecture, evaluation outcomes, and design rationale are public because
-they are the substance of the work. The implementation is proprietary. Private
-repository access is available on request for interview-depth technical review.
+The architecture, evaluation outcomes, and design rationale are public, and so is
+the source: all five repositories are public. Deployment configuration and
+infrastructure detail remain private.
 [What is public vs private →](access.md)
 
 ## Published evaluation
@@ -92,7 +99,6 @@ The examples below use the naming convention `keystone-{component}/{type}-v{n}`.
 | keystone-core/agent-v0         | 66 cases, 4 real bugs surfaced                  | sealed failing |
 | keystone-core/agent-v1         | 186 cases, 558 executions, 0 failures           | passing        |
 | keystone-engage/agent-v1       | 100/100 (regression 70, architecture 25, edge 5)| passing        |
-| keystone-counsel/retrieval-v1  | 30/30                                           | passing        |
 
 The sealed failing run is kept on purpose. A failing baseline preserved next to
 the passing one that replaced it is evidence that the evaluation methodology

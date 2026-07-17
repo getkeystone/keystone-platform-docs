@@ -9,9 +9,9 @@ The distinction is deliberate. Most LLM-era systems treat governance as a
 wrapper: a content filter in front of a model, an audit log written after the
 fact, an access-control check bolted onto retrieval once the product already
 works. Keystone inverts that. Authorization fails closed at the database layer,
-tool scopes are enforced before dispatch, irreversible actions gate on human
-approval, and every action lands in a hash-chained, tamper-evident audit
-record. The controls are structural, not advisory — which is the precondition
+high-risk interactions gate on severity-tier human review, and every action
+lands in a hash-chained (SHA-256) audit record verified on replay. The controls
+are structural, not advisory — which is the precondition
 for a bank, an insurer, or a legal team to put the system in front of real
 users and real regulators.
 
@@ -33,8 +33,8 @@ evaluation harness). [Evaluation](evaluation/index.md) explains the
 methodology and the published baselines, including failing runs sealed
 alongside passing ones. [Design](design/heritage.md) traces where the
 governance decisions come from. [Access](access.md) states plainly what is
-public, what is proprietary, and how to request read-only repository access for
-technical review.
+public (all five repositories) and what remains private (deployment
+configuration and infrastructure detail).
 
 ## Where to go next
 

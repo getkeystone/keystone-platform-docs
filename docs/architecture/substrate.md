@@ -7,7 +7,7 @@ plane is a substrate change, not an extension change.
 
 Each surface is described below three ways: what it is, why it exists, and what
 extension behavior it enables. The point of reading them together is to see
-that governance, cost, and multi-agent operation are not features bolted onto
+that governance, cost, and multi-agent readiness are not features bolted onto
 the extensions — they are properties of the layer the extensions stand on.
 
 ## The six surfaces at a glance
@@ -16,9 +16,9 @@ the extensions — they are properties of the layer the extensions stand on.
 |---|---|---|
 | Agents registry | Identity, role, tempo, and cost profile for every agent | Register and resolve agents by id |
 | Task state machine | Ownership, lifecycle, and recovery of long-running work | Validated transitions, heartbeat, takeover |
-| Hash-chained audit ledger | Tamper-evident record of every governed action | Append entry, verify chain on replay |
+| Hash-chained audit ledger | Append-only, SHA-256 hash-chained record of every governed action | Append entry, verify chain on replay |
 | Event bus | Fan-out of task lifecycle events to observers | Publish and subscribe, off the request path |
-| MCP tool exposure | Scope-checked tool access for models and agents | Authorize on user + agent identity, then dispatch |
+| Query-time authorization | Access control before retrieval: corpus-scope ACL (Engage), classification and client-isolation WHERE clause (Counsel) | Authorize before retrieval; unauthorized rows never return |
 | Cost-aware dispatch | Budget, tempo, and priority on every model call | Dispatch with budget; short-circuit as a recorded event |
 
 ## 1. Agents registry
@@ -34,11 +34,13 @@ recorded centrally, the dispatch layer and the audit ledger can reason about
 who acted, at what time horizon, and at what cost — without trusting the
 extension to report it.
 
-**What it enables.** An extension composes a pipeline out of registered agents.
-The Engage conversational flow, for example, runs distinct functions —
-Empathy, Escalation, Engagement, Budget, and Monitoring — each a registered
-agent with its own tempo and cost profile. Adding a cooperating agent at a new
-tempo is a population change against an existing schema, not a migration.
+**What it enables.** An extension composes a pipeline out of registered roles.
+The Engage coordinator, for example, composes distinct functions (Empathy,
+Escalation, Engagement, Budget, Monitoring); empathy and escalation are
+pre-dispatch gates and budget and monitoring run inline. That coordinator is
+available behind a config flag, and the default served path runs a single agent.
+Adding a cooperating agent at a new tempo is a population change against an
+existing schema, not a migration.
 
 ## 2. Task state machine
 
@@ -58,12 +60,18 @@ outcomes also live here: a human-in-the-loop escalation moves the task into a
 state the operator console can claim, and a budget-exceeded outcome moves it
 into a state an operator can review and approve for continuation.
 
+**Status.** The nine-state schema and validated transitions are implemented.
+Heartbeat, stuck-detection, and takeover are present in the substrate but are
+not yet invoked by the served pipeline and not yet exercised by a sealed
+evaluation case; treat recovery as implemented, not proven.
+
 ## 3. Hash-chained audit ledger
 
-**What it is.** An append-only ledger of HMAC-verified entries. Each entry
-carries a `prev_hash` and a `curr_hash`. Every retrieval, tool call,
-authorization decision, and escalation writes an entry. Two implementations
-exist: an in-memory / file-backed chain and a PostgreSQL-backed chain.
+**What it is.** An append-only ledger of SHA-256 hash-chained entries (the shared
+substrate is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record). Each
+entry carries a `prev_hash` and a `curr_hash`. Every retrieval, authorization
+decision, and escalation writes an entry. Two implementations exist: an
+in-memory / file-backed chain and a PostgreSQL-backed chain.
 
 **Why it exists.** Regulated deployments need an audit record that a reviewer
 can trust months later. Because each entry commits to the hash of the one
@@ -117,24 +125,26 @@ the request path. New observers — additional consoles, external monitors,
 future replicas — attach by subscribing, with no change to the extensions
 producing the events.
 
-## 5. MCP tool exposure
+**Status.** The event bus is implemented on NATS JetStream and is off by
+default in the served configuration; it is not yet exercised by a sealed
+evaluation case.
 
-**What it is.** A Model Context Protocol server entry point. Tool authorization
-takes both user identity and agent identity as input. Different agents carry
-different scopes.
+## 5. Query-time authorization
 
-**Why it exists.** Tool access is a structural control, not a model behavior.
-The tool contract enforces scope before dispatch, so a model that requests a
-tool it lacks scope for is refused at the substrate — not by the model, and not
-by a prompt. A prompt injection that convinces a model to call an out-of-scope
-tool still fails, because the scope check does not consult the model.
+**What it is.** Access control enforced before retrieval. Engage uses a
+corpus-scope ACL (role to allowed corpora, fail-closed). Counsel and the
+keystone-gov reference enforce a classification and client-isolation `WHERE`
+clause inside the retrieval query, so unauthorized rows never return.
 
-**What it enables.** Agent-scoped tool use. Within a single extension,
-different agents hold different tool scopes, so a lower-privilege phase cannot
-invoke a higher-privilege action. Tool-backed flows — such as a governed
-payment-arrangement interaction in Engage — run through the same scope check
-before any tool implementation is reached, and each invocation writes an audit
-entry.
+**Why it exists.** Authorization has to be structural, not a model behavior.
+Putting the check in the query (or as a fail-closed pre-dispatch gate) means a
+bug in an orchestrator or a prompt injection cannot leak content the caller was
+not permitted to see, because the content was never retrieved.
+
+**Status.** Corpus-scope authorization (Engage) and the classification and
+client-isolation WHERE clause (Counsel, gov) are implemented and served. A Model
+Context Protocol server entry point is scaffolded but not wired to the served
+path; do not rely on it as a control. See the claims matrix.
 
 ## 6. Cost-aware dispatch
 
@@ -157,12 +167,18 @@ work and `deferred` batch signaling coexist under one dispatch contract. And
 because cost is recorded alongside every action, evaluation can report cost next
 to accuracy rather than treating them as separate concerns.
 
+**Status.** The cost and budget fields are present on every dispatch and audit
+entry, but per-call cost is not yet populated end-to-end (local-inference cost
+is recorded as zero today), so budget short-circuit and cost-vs-accuracy
+reporting are not yet exercised by a sealed case.
+
 ## Why it is a substrate, not a library
 
 The agents registry, task state machine, tempo dimension, and cost fields exist
 before they are fully populated. The schema is designed for multiple
-cooperating agents at different tempos on day one, even when a first release
-runs one primary coordinator across a small number of specialist functions.
+cooperating agents at different tempos on day one, even when the default served
+path runs a single agent and the multi-agent coordinator (a small number of
+specialist functions) sits behind a config flag.
 Adding cooperating agents is a population change, not a schema migration.
 
 A library would hand each extension a set of helpers and let each extension

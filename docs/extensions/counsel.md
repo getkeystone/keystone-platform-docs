@@ -121,13 +121,14 @@ authorized to retrieve, enforced before ranking.
 
 | Baseline                      | Result                                       |
 |-------------------------------|----------------------------------------------|
-| keystone-counsel/retrieval-v1 | 30/30 baseline sealed                        |
 | keystone-core/retrieval-v1    | P@1=0.75, MRR=0.79, 8/8 ACL probes blocked   |
 
-The counsel baseline seals a 30-case retrieval suite. The core retrieval
-baseline additionally exercises adversarial ACL probes: eight queries crafted to
-retrieve content the caller is not authorized to see, all blocked at the query
-layer. Runs are executed by the endpoint-agnostic harness — see
+There is no sealed counsel evaluation baseline yet; counsel's client isolation
+is covered by the cross-client retrieval regression test, which verifies denial
+on both the classification-filtered and unfiltered paths. The core retrieval
+baseline exercises adversarial ACL probes: eight queries crafted to retrieve
+content the caller is not authorized to see, all blocked at the query layer.
+Runs are executed by the endpoint-agnostic harness — see
 [keystone-verify →](verify.md).
 
 Eval artifacts: [keystone-ledger →](https://github.com/getkeystone/keystone-ledger)
@@ -140,6 +141,5 @@ audit chain and cost-aware dispatch. See the
 
 ## Source code
 
-The keystone-counsel source code is proprietary. Private repo access is
-available on request for interview-depth technical review.
-[Request access →](../access.md)
+The keystone-counsel source is public:
+[github.com/getkeystone/keystone-counsel](https://github.com/getkeystone/keystone-counsel).

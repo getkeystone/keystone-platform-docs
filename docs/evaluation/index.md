@@ -1,8 +1,8 @@
 # Evaluation Methodology
 
 Evaluation at Keystone is a first-class artifact, not a QA afterthought. Every
-published metric is produced by a repeatable run, sealed to an immutable
-artifact, and traceable back to the exact cases and endpoint that generated it.
+published metric is produced by a repeatable run, sealed to a durable
+artifact in the ledger, and traceable back to the exact cases and endpoint that generated it.
 Passing and failing runs live side by side in the same ledger.
 
 ## Principles
@@ -15,8 +15,9 @@ Passing and failing runs live side by side in the same ledger.
 3. **Every published metric is traceable to a sealed artifact.** A number in a
    table maps to a specific run, its cases, and its raw results — no orphan
    claims.
-4. **Cost is reported alongside quality.** Accuracy without a cost figure is half
-   a result. Cost is a first-class assertion type, not a footnote.
+4. **Governance is reported alongside quality.** Accuracy without a governance
+   figure is half a result. Severity, fail-closed behavior, and citation presence
+   are first-class assertions, not footnotes.
 5. **The framework is reusable, not Keystone-specific.** The same harness runs
    against any HTTP endpoint, so the methodology outlives any single system.
 
@@ -44,7 +45,6 @@ to a sealed artifact with its full case set and raw results.
 | keystone-core/agent-v0        | agent             | 66 cases, 4 real bugs surfaced                          | sealed failing |
 | keystone-core/agent-v1        | agent (canonical) | 186 cases, 558 executions, 0 failures                  | passing        |
 | keystone-engage/agent-v1      | engage baseline   | 100/100 (regression 70, architecture 25, edge 5)       | passing        |
-| keystone-counsel/retrieval-v1 | counsel baseline  | 30/30                                                  | passing        |
 
 The retrieval baseline reports access-control behavior as a first-class metric:
 all eight adversarial cases that attempt to retrieve out-of-scope records are
@@ -69,8 +69,8 @@ from.
 The evaluation ledger is published at
 [keystone-ledger](https://github.com/getkeystone/keystone-ledger). It holds the
 sealed artifacts — case sets, run metadata, and raw results — that back every
-figure in the table above. Because the artifacts are immutable, a published
-metric can be re-derived from its source at any time.
+figure in the table above. Because the artifacts are versioned and preserved, a
+published metric can be re-derived from its source at any time.
 
 ## The evaluation framework
 
@@ -78,11 +78,11 @@ metric can be re-derived from its source at any time.
 produces these artifacts. It is open source, endpoint-agnostic, and runs against
 any HTTP endpoint. The framework provides:
 
-- A **profile system** (YAML) for declaring endpoints, request templates, and
+- A **profile system** (JSON) for declaring endpoints, request templates, and
   assertion vocabularies.
-- A **pure-function judge engine** with five assertion types: literal,
-  structural, semantic, governance, and cost.
-- A **sealed-artifact reporter** that writes machine-readable results and run
+- A **pure-function judge engine** with assertion types: literal, structural,
+  semantic, and governance.
+- A **structured-artifact reporter** that writes machine-readable results and run
   metadata, preserving both failing and passing runs.
 - A **CLI** for running evaluations locally or in CI.
 

@@ -6,8 +6,8 @@ Governed conversational agent for regulated customer interaction.
 
 Engage handles customer-facing conversations in regulated environments where
 every response must be governed, every decision auditable, and escalation to a
-human must happen reliably when the situation requires it. A single customer
-turn runs through a fixed, five-phase governed pipeline. Every phase records
+human must happen reliably when the situation requires it. Engage's governed
+pipeline is implemented as a fixed, five-phase flow. Every phase records
 what it did before the next phase runs.
 
 ## Who it is for
@@ -135,13 +135,12 @@ the raw artifacts in
 ## Substrate dependencies
 
 Engage consumes the full substrate: the agents registry, the task state machine,
-the hash-chained audit ledger, the event bus, MCP-exposed tools with
-agent-scoped authorization, and cost-aware dispatch. It is workload logic on top
+the hash-chained (SHA-256) audit ledger, the event bus, query-time authorization,
+and cost-aware dispatch. It is workload logic on top
 of shared primitives, not a standalone application.
 See the [substrate model →](../architecture/substrate.md).
 
 ## Source code
 
-The keystone-engage source code is proprietary. Read-only technical review of
-the private repository is available on request for interview-depth evaluation.
-[Request access →](../access.md)
+The keystone-engage source is public:
+[github.com/getkeystone/keystone-engage](https://github.com/getkeystone/keystone-engage).

@@ -8,12 +8,13 @@ so each extension is the workload logic and nothing more.
 
 ## keystone-engage
 
-Governed conversational agent for regulated customer interaction. A single
-customer turn runs through a five-phase governed pipeline — Empathy,
-Escalation, Engagement, Budget, Monitoring — each a registered specialist with
-its own tempo and cost profile. Severity-tier routing escalates to a human when
-the situation requires it, budget enforcement short-circuits a runaway session,
-and every phase writes a hash-chained audit entry.
+Governed conversational agent for regulated customer interaction. The served
+path is a single governed agent. A multi-agent coordinator, available behind a
+config flag and not the default route, runs a five-phase pipeline (Empathy,
+Escalation, Engagement, Budget, Monitoring); empathy and escalation are
+pre-dispatch gates and budget and monitoring are carried inline by the
+coordinator, not standalone agents. Severity-tier routing escalates to a human
+when the situation requires it, and every audit entry is SHA-256 hash-chained.
 [keystone-engage →](engage.md)
 
 ## keystone-counsel
@@ -30,15 +31,16 @@ guessing.
 
 Standalone evaluation harness, endpoint-agnostic. Verify runs against any HTTP
 endpoint that matches its profile contract, scoring responses against a
-structured assertion vocabulary and sealing every run. Failing runs are
-preserved next to passing ones as evidence the methodology finds real bugs.
+structured assertion vocabulary and writing a structured, reproducible run to
+disk. Failing runs are preserved next to passing ones as evidence the
+methodology finds real bugs.
 It is open source.
 [keystone-verify →](verify.md)
 
 ## One substrate underneath
 
 All three extensions consume the same substrate: an agents registry, a task
-state machine, a tamper-evident audit ledger, an event bus, MCP-exposed tools
-with agent-scoped authorization, and cost-aware dispatch. The substrate is what
+state machine, a hash-chained (SHA-256) audit ledger, an event bus, query-time
+authorization, and cost-aware dispatch. The substrate is what
 makes this a platform rather than three separate applications.
 See the [substrate model →](../architecture/substrate.md).
