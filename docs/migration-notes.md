@@ -1,5 +1,16 @@
 # Platform Page Migration Notes
 
+!!! failure "Superseded — this plan was reversed and never executed as written"
+    This checklist was written to take `keystone-engage`, `keystone-counsel`,
+    `keystone-gov`, and `keystone-demo` **private**. That decision was reversed.
+    As of 2026-07-16, **all five platform repositories are public**:
+    `keystone-engage`, `keystone-counsel`, `keystone-gov`, `keystone-verify`,
+    and `keystone-ledger`. Only `keystone-demo` (deployment configuration)
+    remains private. There is no longer any "request access" process for source
+    code — the source is public. The checklist below is retained only as a
+    record of the original, superseded migration plan; **do not execute it**.
+    See [What is public vs private](access.md) for current state.
+
 !!! danger "Internal note — not published"
     This file is excluded from the built site. It is a working checklist for
     the operator, not public documentation. Do not link to it from any public
