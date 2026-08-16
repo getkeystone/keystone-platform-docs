@@ -9,8 +9,8 @@ sits.
 
 The following are publicly available and inspectable:
 
-- **Platform documentation** — this site: architecture, the shared
-  [substrate](architecture/substrate.md), extension design, capabilities,
+- **Platform documentation** — this site: architecture, the
+  [substrate model](architecture/substrate.md), extension design, capabilities,
   [design heritage](design/heritage.md), and
   [evaluation summaries](evaluation/index.md).
 - **The evaluation framework** — keystone-verify. Inspect the profile system,

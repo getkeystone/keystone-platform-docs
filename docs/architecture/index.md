@@ -1,9 +1,9 @@
 # System architecture
 
-Keystone is one platform organized as three layers: **extensions**, a **shared
-substrate**, and **infrastructure**. Each layer depends only on the layer beneath
-it, and only through a contract. That single rule — extensions call substrate
-contracts, substrate contracts talk to infrastructure — is what makes Keystone a
+Keystone is one platform organized as three implementation layers: **extensions**,
+a **shared runtime**, and **infrastructure**. Each layer depends only on the layer
+beneath it, and only through a contract. That single rule — extensions call
+runtime contracts, the runtime talks to infrastructure — is what makes Keystone a
 platform rather than three applications that happen to share a database.
 
 ## The layered model
@@ -13,10 +13,10 @@ platform rather than three applications that happen to share a database.
 │  Extensions                                                      │
 │    keystone-engage      keystone-counsel      keystone-verify    │
 └────────────────────────────────────────────────────────────────┘
-                          │  call substrate contracts
+                          │  call runtime contracts
                           ▼
 ┌────────────────────────────────────────────────────────────────┐
-│  Shared substrate                                                │
+│  Shared runtime                                                  │
 │    agents registry          task state machine (9 states)        │
 │    hash-chained audit        NATS JetStream event bus            │
 │    query-time authz          cost-aware dispatch                 │
@@ -35,25 +35,55 @@ Three properties hold this model together:
 
 - **Extensions never touch infrastructure directly.** An extension does not open
   a database connection, publish to the event bus, or call an inference backend
-  on its own. It calls a substrate contract, and the substrate mediates the
+  on its own. It calls a runtime contract, and the shared runtime mediates the
   infrastructure. This keeps governance, authorization, and audit on the request
   path instead of scattered through application code.
 
 - **Extensions do not rebuild shared capabilities.** The agents registry, task
   state machine, audit ledger, event bus, query-time authorization, and
-  cost-aware dispatch live in the substrate once. Extensions consume them; they do not each carry a
+  cost-aware dispatch live in the shared runtime once. Extensions consume them; they do not each carry a
   private roster, a private audit format, or a private budget mechanism. Adding
   an extension is a matter of consuming existing contracts, not re-implementing
   the platform.
 
-- **Infrastructure is replaceable.** Swapping an inference backend or migrating a
-  data plane is a substrate change, not an extension change. The extensions above
-  the substrate are unaffected because they never named the backend in the first
-  place.
+- **Infrastructure is replaceable in principle.** Swapping an inference backend or
+  migrating a data plane is intended to be a change at the runtime layer rather
+  than in the extensions, which never name the backend directly. How completely
+  the governance semantics survive such a swap is a research question, not a
+  demonstrated portability property.
 
-For the six surfaces the substrate exposes and how they compose, see the
-[substrate model](substrate.md). For what each extension does on top of them, see
+For the six implemented runtime services and how they compose, see the
+[substrate model](substrate.md), which documents both the research abstraction
+and its current instantiation. For what each extension does on top of them, see
 the [extensions overview](../extensions/index.md).
+
+## Conceptual layers
+
+The implementation diagram above is one view. Conceptually, the platform spans
+several layers, some implemented and some research architecture. They are listed
+here so implemented mechanisms are not confused with proposed ones:
+
+1. **Capability layer** — models, prompts, tools, memory, planning. External to
+   Keystone.
+2. **Orchestration layer** — routing, queues, scheduling, delegation, retries,
+   recovery.
+3. **Shared runtime implementation** (implemented) — registry, task state,
+   authorization, event coordination, audit, dispatch. The services documented on
+   this page.
+4. **Candidate runtime substrate model** (research) — identity, task state,
+   tempo, cost, currency, and fidelity as candidate dimensions of governed
+   execution. A candidate representation, not an established or complete set. See
+   the [substrate model](substrate.md).
+5. **Governance contract** (research) — material-change rules, revalidation
+   conditions, and consequence policy (PROCEED, HOLD, DENY, ESCALATE).
+6. **Action boundary** (research architecture) — the progression from generation
+   to recommendation to evaluation to authorization to commitment. Generalized
+   action binding is a proposed architecture, not a demonstrated guarantee; the
+   served path today executes retrieval and generation and does not bind external
+   consequences.
+7. **Evidence and evaluation** (implemented) — hash-chained audit records,
+   evaluation artifacts, preserved failure lineage, and the ability to reconstruct
+   why an action was handled as it was.
 
 ## Design principles
 
@@ -81,7 +111,7 @@ behaves as expected.
 
 4. **Hash-chained audit trail.** Every retrieval, authorization decision, and
    escalation writes an append-only, SHA-256 hash-chained audit entry (the shared
-   substrate is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record). Each
+   runtime is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record). Each
    entry carries the hash of the entry before it, and `verify_chain` walks the
    full ledger on replay, so an edit or deletion breaks the chain and is
    detectable. The audit trail is evidence, not a log that can be quietly rewritten.
@@ -89,8 +119,9 @@ behaves as expected.
 5. **Sealed failing runs preserved alongside passing runs.** Evaluation runs are
    sealed as durable artifacts in the ledger, and a failing run is not deleted
    when a passing run replaces it. Both are kept. As a published example, the sealed failing
-   baseline `keystone-core/agent-v0` (66 cases, 4 real bugs surfaced) sits next to
-   the passing `keystone-core/agent-v1` (186 cases, 558 executions, 0 failures).
+   baseline `keystone-core/agent-v0` (186 cases; 9 failing cases from 4 root-cause
+   defects) sits next to the passing `keystone-core/agent-v1` (186 cases, 558
+   executions, 0 failures).
    The failing run is the evidence that the methodology finds real bugs. See the
    [evaluation methodology](../evaluation/index.md).
 
@@ -100,7 +131,7 @@ behaves as expected.
    and the short-circuit is a recorded event, not a silent failure. Cost is
    measured and governed on the same path as correctness and authorization.
 
-7. **Local-first deployment.** Every substrate component runs on hardware the
+7. **Local-first deployment.** Every runtime component runs on hardware the
    operator controls: the database, the event bus, the trace backend, and the
    model serving. There is no required dependency on an external inference API.
    Regulated operators can run the platform inside their own boundary, which is
@@ -108,7 +139,7 @@ behaves as expected.
 
 ## Related
 
-- [The substrate model](substrate.md) — the six surfaces extensions consume
-- [Extensions overview](../extensions/index.md) — what runs on top of the substrate
+- [The substrate model](substrate.md) — the research abstraction and its current instantiation
+- [Extensions overview](../extensions/index.md) — what runs on top of the shared runtime
 - [Evaluation methodology](../evaluation/index.md) — how runs are sealed and preserved
 - [What is public vs private](../access.md) — repository access and boundaries

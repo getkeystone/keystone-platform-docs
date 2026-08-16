@@ -1,9 +1,9 @@
 # Extensions
 
-Keystone is three extensions running on one shared substrate. Each extension
+Keystone is three extensions running on shared runtime services. Each extension
 targets a different regulated workload — conversation, retrieval, evaluation —
 but none of them rebuilds governance, audit, authorization, or dispatch from
-scratch. They plug into a common substrate that provides those primitives once,
+scratch. They plug into a common shared runtime that provides those primitives once,
 so each extension is the workload logic and nothing more.
 
 ## keystone-engage
@@ -37,10 +37,10 @@ methodology finds real bugs.
 It is open source.
 [keystone-verify →](verify.md)
 
-## One substrate underneath
+## One shared runtime underneath
 
-All three extensions consume the same substrate: an agents registry, a task
+All three extensions consume the same shared runtime: an agents registry, a task
 state machine, a hash-chained (SHA-256) audit ledger, an event bus, query-time
-authorization, and cost-aware dispatch. The substrate is what
+authorization, and cost-aware dispatch. The shared runtime is what
 makes this a platform rather than three separate applications.
 See the [substrate model →](../architecture/substrate.md).

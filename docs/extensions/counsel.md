@@ -133,10 +133,10 @@ Runs are executed by the endpoint-agnostic harness — see
 
 Eval artifacts: [keystone-ledger →](https://github.com/getkeystone/keystone-ledger)
 
-## Substrate dependencies
+## Shared runtime dependencies
 
-Counsel enforces authorization at the database layer and consumes the substrate
-audit chain and cost-aware dispatch. See the
+Counsel enforces authorization at the database layer and consumes the shared
+runtime audit chain and cost-aware dispatch. See the
 [substrate model →](../architecture/substrate.md).
 
 ## Source code

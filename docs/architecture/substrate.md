@@ -1,14 +1,58 @@
 # The substrate model
 
-The substrate is not a monolith. It is six named surfaces that the three
-extensions consume. Extensions call substrate contracts; substrate contracts
-talk to infrastructure. Replacing an inference backend or migrating a data
-plane is a substrate change, not an extension change.
+This page describes the **research abstraction**, not the concrete platform
+services. The runtime substrate is a conceptual, durable semantic layer: the
+governance-relevant facts about a unit of work that should stay meaningful even
+as models, frameworks, and providers change beneath them. The implemented
+services on the [architecture overview](index.md) and the
+[shared runtime](../index.md#the-shared-runtime) are one current instantiation
+of this abstraction, not its definition.
 
-Each surface is described below three ways: what it is, why it exists, and what
-extension behavior it enables. The point of reading them together is to see
-that governance, cost, and multi-agent readiness are not features bolted onto
-the extensions — they are properties of the layer the extensions stand on.
+## Candidate substrate dimensions
+
+The working research architecture proposes six candidate dimensions of governed
+execution. They are a candidate representation of governance-relevant runtime
+state, not an established or universal set, and not a claim of completeness:
+
+- **Identity** — who or what is acting, and under whose authority.
+- **Task state** — where the unit of work is in its lifecycle.
+- **Tempo** — the time horizon the work is expected to run under.
+- **Cost** — what the work may consume, and what it consumed.
+- **Currency** — whether the justification for an action still holds at the
+  moment of consequence.
+- **Fidelity** — the bar the result must clear for its context, and the evidence
+  that it did.
+
+The substrate's job is to expose and preserve these governance-relevant facts so
+a decision can be made about them and later reconstructed.
+
+## The governance contract
+
+The **governance contract** is the layer that decides what to do with those
+facts. For a given action it determines:
+
+- which facts matter to the action,
+- which changes to those facts are material,
+- what a material change requires revalidating,
+- what evidence must be recorded, and
+- whether the outcome is **PROCEED**, **HOLD**, **DENY**, or **ESCALATE**.
+
+Which runtime changes make a prior decision stale, what should trigger
+revalidation, and whether any material-change taxonomy is complete are open
+research questions. Whether the governance semantics survive replacement of the
+model, framework, or provider is a hypothesis to test, not a demonstrated
+property.
+
+## One current instantiation
+
+The sections below document the concrete services that currently instantiate the
+substrate. They are the implemented shared runtime, described here so the mapping
+between the abstraction and the code is visible. They are one instantiation, not
+the definition of the substrate, and the six candidate dimensions above are not
+the same thing as these six services.
+
+Each surface is described three ways: what it is, why it exists, and what
+extension behavior it enables.
 
 ## The six surfaces at a glance
 
@@ -68,7 +112,7 @@ evaluation case; treat recovery as implemented, not proven.
 ## 3. Hash-chained audit ledger
 
 **What it is.** An append-only ledger of SHA-256 hash-chained entries (the shared
-substrate is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record). Each
+runtime is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record). Each
 entry carries a `prev_hash` and a `curr_hash`. Every retrieval, authorization
 decision, and escalation writes an entry. Two implementations exist: an
 in-memory / file-backed chain and a PostgreSQL-backed chain.
@@ -184,9 +228,11 @@ Adding cooperating agents is a population change, not a schema migration.
 A library would hand each extension a set of helpers and let each extension
 decide how to hold identity, lifecycle, audit, and cost. The substrate does the
 opposite: it owns those surfaces, and the extensions consume the contracts. That
-is why replacing an inference backend or migrating a data plane is a substrate
-change with a stable extension-facing contract, and why governance and cost are
-uniform across every extension rather than reimplemented per extension.
+is why swapping an inference backend or data plane is intended to be a change at
+the runtime layer behind a stable extension-facing contract rather than a change
+to every extension. How completely the governance semantics survive such a swap
+is a research question, not a demonstrated portability property. Governance and
+cost are uniform across every extension rather than reimplemented per extension.
 
 ## Infrastructure
 

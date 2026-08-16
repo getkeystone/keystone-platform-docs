@@ -1,7 +1,7 @@
 # About Keystone Applied Intelligence
 
-Keystone is governed AI infrastructure that regulated enterprises can actually
-deploy. It is three extensions running on one shared substrate, with
+Keystone is governed AI infrastructure for regulated and high-consequence
+environments. It is three extensions running on shared runtime services, with
 governance, authorization, and evaluation designed in from the first commit
 rather than bolted on afterward.
 
@@ -10,10 +10,11 @@ wrapper: a content filter in front of a model, an audit log written after the
 fact, an access-control check bolted onto retrieval once the product already
 works. Keystone inverts that. Authorization fails closed at the database layer,
 high-risk interactions gate on severity-tier human review, and every action
-lands in a hash-chained (SHA-256) audit record verified on replay. The controls
-are structural, not advisory — which is the precondition
-for a bank, an insurer, or a legal team to put the system in front of real
-users and real regulators.
+lands in a hash-chained (SHA-256) audit record whose chain is re-verifiable on
+replay by `verify_chain`. The controls
+are structural, not advisory — the kind of precondition a bank, an insurer, or a
+legal team would require before putting any system in front of real users and
+regulators.
 
 The operational rigor is not new. It is the discipline the contact-center
 industry already built for compliance reasons over the pre-LLM decades of
@@ -24,9 +25,10 @@ mapping.
 ## How to navigate these docs
 
 Start with [Architecture](architecture/index.md) for the layered model and the
-[shared substrate](architecture/substrate.md) that every extension plugs into.
+[substrate model](architecture/substrate.md), which covers both the shared
+runtime and the research abstraction.
 [Extensions](extensions/index.md) covers the three capabilities built on that
-substrate — [keystone-engage](extensions/engage.md) (governed conversational
+shared runtime — [keystone-engage](extensions/engage.md) (governed conversational
 agent), [keystone-counsel](extensions/counsel.md) (authorization-first
 retrieval), and [keystone-verify](extensions/verify.md) (the standalone
 evaluation harness). [Evaluation](evaluation/index.md) explains the

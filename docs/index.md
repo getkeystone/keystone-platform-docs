@@ -1,14 +1,20 @@
 # Keystone Applied Intelligence
 
-Keystone is a platform for building governed AI systems that regulated
-enterprises can deploy. It is three extensions running on one shared substrate,
-with governance, authorization, and evaluation designed in from the first commit
-rather than bolted on afterward.
+Keystone is an independent engineering and R&D platform for building and
+evaluating governed AI systems in regulated and high-consequence environments.
 
-The platform is built for environments where every response must be governed,
-every decision auditable, and every retrieval authorized before it happens:
-customer interaction, legal and financial advisory, and the evaluation that
-proves the other two behave.
+The work focuses on the runtime layer between model capability and production
+consequence: authorization, task state, evidence, evaluation, auditability,
+observability, and fail-closed behavior.
+
+Three extensions run on shared runtime services, with authorization, execution
+state, audit evidence, and evaluation designed into the architecture rather than
+added only at the application boundary.
+
+The platform is intended for workloads where responses and actions must operate
+under explicit authority, evidence, and review constraints: customer
+interaction, controlled retrieval and advisory workflows, and the evaluation
+infrastructure used to test those claims.
 
 ## The three extensions
 
@@ -23,16 +29,19 @@ advisory content. Classification-aware vector-similarity ACL filtering enforced
 at the database layer. Fail-closed under insufficient authorization or
 insufficient confidence.
 
-**keystone-verify.** Standalone evaluation harness, endpoint-agnostic. Runs
-against any HTTP endpoint over a structured profile and assertion vocabulary.
-It writes structured, reproducible runs; failing runs are preserved alongside
-passing runs, and the ledger seals and versions them.
+**keystone-verify.** Standalone, endpoint-agnostic evaluation harness. Runs
+against HTTP endpoints using structured profiles and assertions. Preserves
+sealed failing runs alongside passing runs so remediation can be evaluated
+against the failure it replaced.
 [View on GitHub →](https://github.com/getkeystone/keystone-verify)
 
-## The shared substrate
+## The shared runtime
 
-All three extensions sit on one shared substrate. Six named surfaces do the
-governance work so the extensions do not have to reimplement it:
+All three extensions use the same runtime services rather than rebuilding
+authorization, state, evidence, coordination, and resource controls
+independently.
+
+Six currently implemented services provide that common execution foundation:
 
 - **Agents registry.** A first-class registry of agents, each carrying identity,
   role, tempo classification, and a cost profile. Every audit entry references a
@@ -41,7 +50,7 @@ governance work so the extensions do not have to reimplement it:
   takeover protocol so long-running tasks stay recoverable rather than silently
   orphaned.
 - **Hash-chained audit ledger.** Append-only, SHA-256 hash-chained entries (the
-  shared substrate is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record).
+  shared runtime is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record).
   Each entry chains to the previous one, and `verify_chain` walks the full ledger
   on replay, so a break in the chain is detectable.
 - **NATS JetStream event bus.** Carries task lifecycle events for observers.
@@ -55,20 +64,51 @@ governance work so the extensions do not have to reimplement it:
   every audit entry records tokens, model, and cost. Dispatch can short-circuit
   when a budget is exhausted, and the short-circuit is a recorded event.
 
+These are six implemented runtime services. They are not the six candidate
+substrate dimensions of the research model (see
+[Engineering platform and research model](#engineering-platform-and-research-model)),
+and should not be read as such.
+
 ## Why this is a platform, not a set of demos
 
-The extensions plug into the substrate. They do not each rebuild it.
+The extensions plug into the shared runtime. They do not each rebuild it.
 
-Engage, counsel, and verify share one agents registry, one task state machine,
-one audit chain, one event bus, one authorization model, and one cost model.
-Adding a capability is a population change against existing contracts, not a new
-stack. Swapping an inference backend or migrating a data plane is a substrate
-change, not an extension change. That shared foundation is what separates a
-platform from three disconnected proofs of concept.
+Engage, Counsel, and Verify share common identity, task-state, audit, event,
+authorization, and resource services. Adding a workload can therefore reuse
+existing runtime contracts rather than rebuilding those mechanisms from scratch.
+
+The architecture is designed to reduce dependence on any particular inference
+backend, model provider, or orchestration layer. How well the governance
+semantics survive replacement of those components remains an empirical research
+question rather than a demonstrated portability property.
 
 The design rationale traces to a specific origin: the operational rigor the
 contact-center industry already built for compliance and governance, rebuilt for
-the LLM substrate. See [contact-center heritage →](design/heritage.md).
+LLM-based systems. See [contact-center heritage →](design/heritage.md).
+
+## Engineering platform and research model
+
+Keystone distinguishes the implemented runtime from the research model being
+developed around it.
+
+The implemented runtime contains concrete services such as agent registration,
+task state, authorization, event coordination, audit evidence, evaluation, and
+model dispatch.
+
+The working research architecture, *Governed Execution as a Runtime Contract*,
+proposes identity, task state, tempo, cost, currency, and fidelity as candidate
+substrate dimensions of governed execution.
+
+These dimensions are a candidate representation of governance-relevant runtime
+state, not six implemented services and not a claim of completeness.
+
+Current research asks which runtime changes make a prior governance decision
+stale, what should trigger revalidation, and what evidence should allow an
+external reviewer to reconstruct why an action proceeded, was held, denied, or
+escalated.
+
+Cross-framework portability, generalized action binding, and completeness of the
+candidate dimensions remain hypotheses to test.
 
 ## What is public vs private
 
@@ -95,14 +135,16 @@ The examples below use the naming convention `keystone-{component}/{type}-v{n}`.
 
 | Baseline                       | Result                                          | Status         |
 |--------------------------------|-------------------------------------------------|----------------|
-| keystone-core/retrieval-v1     | P@1=0.75, MRR=0.79, 8/8 adversarial ACL blocked, fail-closed 83% | passing        |
-| keystone-core/agent-v0         | 66 cases, 4 real bugs surfaced                  | sealed failing |
+| keystone-core/retrieval-v1     | P@1=0.75, MRR=0.79, 8/8 adversarial ACL blocked, fail-closed 5/6 (83%) | mixed          |
+| keystone-core/agent-v0         | 186 cases; 9 failing cases, 4 root-cause defects | sealed failing |
 | keystone-core/agent-v1         | 186 cases, 558 executions, 0 failures           | passing        |
 | keystone-engage/agent-v1       | 100/100 (regression 70, architecture 25, edge 5)| passing        |
 
-The sealed failing run is kept on purpose. A failing baseline preserved next to
-the passing one that replaced it is evidence that the evaluation methodology
-finds real bugs.
+The sealed failing run is kept on purpose. Preserving the failing baseline next
+to the passing baseline that replaced it provides evidence that the evaluation
+process can surface implementation defects. The retrieval-v1 fail-closed figure
+(83%, 5 of 6) is from the sealed 2026-04-11 baseline; its single miss (FC-005)
+has a demo-grade domain-scope guard merged, with re-verification not yet sealed.
 
 ## Learn more
 

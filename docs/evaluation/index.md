@@ -41,22 +41,29 @@ to a sealed artifact with its full case set and raw results.
 
 | Identifier                    | Type              | Summary                                                 | Status         |
 |-------------------------------|-------------------|---------------------------------------------------------|----------------|
-| keystone-core/retrieval-v1    | retrieval         | P@1 0.75, MRR 0.79, 8/8 adversarial ACL blocked, FC 83% | passing        |
-| keystone-core/agent-v0        | agent             | 66 cases, 4 real bugs surfaced                          | sealed failing |
+| keystone-core/retrieval-v1    | retrieval         | P@1 0.75, MRR 0.79, 8/8 adversarial ACL blocked, fail-closed 5/6 (83%) | mixed          |
+| keystone-core/agent-v0        | agent             | 186 cases; 9 failing cases, 4 root-cause defects        | sealed failing |
 | keystone-core/agent-v1        | agent (canonical) | 186 cases, 558 executions, 0 failures                  | passing        |
 | keystone-engage/agent-v1      | engage baseline   | 100/100 (regression 70, architecture 25, edge 5)       | passing        |
 
 The retrieval baseline reports access-control behavior as a first-class metric:
 all eight adversarial cases that attempt to retrieve out-of-scope records are
-blocked, and the system fails closed 83% of the time under ambiguity. Governance
-is measured, not assumed.
+blocked, and the system fails closed on 5 of 6 (83%) of the ambiguous cases in
+the sealed 2026-04-11 baseline. The single miss (FC-005) has a demo-grade
+domain-scope guard merged, with re-verification not yet sealed. Governance is
+measured, not assumed.
 
 ## Sealed failing runs
 
-`keystone-core/agent-v0` found four real system bugs. It is preserved as a
-sealed artifact next to the passing `keystone-core/agent-v1` baseline. The
-failing run is not an embarrassment — it is proof that the evaluation method
-finds real defects before they reach production.
+An earlier 66-case pre-run (`keystone-core/agent-v0-pre`) passed; expanding the
+evaluation to 186 spec-compliant cases is what surfaced defects the smaller run
+had missed. That expanded run, `keystone-core/agent-v0`, produced nine failing
+cases traced to four distinct root-cause implementation defects. It is preserved
+as a sealed artifact next to the passing `keystone-core/agent-v1` baseline. The
+failing run is not an embarrassment — it is evidence that the evaluation process
+can surface real implementation defects. It is evidence about the evaluation
+method, not a proof of the system's substantive correctness, safety, or
+compliance.
 
 This is a discipline the contact-center industry built long ago for compliance
 and quality management: bad calls were not hidden, they were analyzed. Keystone

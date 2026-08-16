@@ -81,8 +81,8 @@ path that exports it.
 
 ## The builder's background
 
-Keystone is built by an engineer with thirteen years at Genesys building the AI
-intelligence layer of enterprise contact centers — Knowledge Center retrieval,
+Keystone is built by an engineer with 12+ years at Genesys building enterprise
+contact-center and cloud systems — Knowledge Center retrieval,
 the chat suite, e-services, and contact analytics. That was the pre-LLM era of
 conversational AI: the systems that had to be auditable, escalatable, and safe
 to run against real customers before large language models existed.

@@ -123,18 +123,19 @@ Engage ships with a sealed baseline evaluated by the standalone
 | Baseline                  | Result                                             |
 |---------------------------|----------------------------------------------------|
 | keystone-engage/agent-v1  | 100/100 (regression 70, architecture 25, edge 5)   |
-| keystone-core/agent-v0    | Sealed failing: 66 cases, 4 real bugs surfaced     |
+| keystone-core/agent-v0    | Sealed failing: 186 cases; 9 failing cases, 4 root-cause defects |
 | keystone-core/agent-v1    | 186 cases, 558 executions, 0 failures              |
 
 The `agent-v0` run is a failing baseline preserved next to the passing one: it
-found four real bugs, which is the evidence that the methodology works. See the
+surfaced nine failing cases traced to four root-cause implementation defects,
+which is the evidence that the methodology works. See the
 [evaluation model →](../evaluation/index.md) for how baselines are sealed, and
 the raw artifacts in
 [keystone-ledger →](https://github.com/getkeystone/keystone-ledger).
 
-## Substrate dependencies
+## Shared runtime dependencies
 
-Engage consumes the full substrate: the agents registry, the task state machine,
+Engage consumes the full shared runtime: the agents registry, the task state machine,
 the hash-chained (SHA-256) audit ledger, the event bus, query-time authorization,
 and cost-aware dispatch. It is workload logic on top
 of shared primitives, not a standalone application.

@@ -108,15 +108,17 @@ whatever the system happens to do.
 Two published examples from the evaluation ledger illustrate the pattern:
 
 ```
-agent-v0   sealed, FAILING   66 cases    surfaced 4 real bugs
+agent-v0   sealed, FAILING   186 cases   9 failing cases, 4 root-cause defects
 agent-v1   sealed, PASSING    186 cases   558 executions, 0 failures
 ```
 
-The `agent-v0` run failed, and it failed usefully: it found four genuine bugs.
-Those were fixed, and `agent-v1` became the canonical passing baseline. The
+The `agent-v0` run failed, and it failed usefully: its nine failing cases traced
+to four distinct root-cause implementation defects. Those were fixed, and
+`agent-v1` became the canonical passing baseline. The
 failing run stays in the ledger next to the passing one. A methodology that only
 ever produces green checkmarks has not been shown to detect anything; a
-preserved red run is the proof that it can.
+preserved red run is evidence that it can. This is evidence about detection, not
+a proof that the passing system is substantively correct, safe, or compliant.
 
 ## Reference profiles
 
