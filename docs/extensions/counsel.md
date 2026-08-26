@@ -28,8 +28,8 @@ code behaving correctly.
 
 Most retrieval systems filter after the fact: fetch candidates, then drop the
 ones the caller should not see in application code. That design has a standing
-failure mode. Any component between the fetch and the filter — an orchestrator
-bug, an injected instruction, a model that fabricates a citation — can surface
+failure mode. Any component between the fetch and the filter (an orchestrator
+bug, an injected instruction, a model that fabricates a citation) can surface
 content that was retrieved but should have been withheld. The unauthorized rows
 were in memory; something only had to fail to omit them.
 
@@ -48,7 +48,7 @@ The snippet below is an **illustrative shape**, not the production query. Real
 column names, operators, tuned thresholds, and the full schema are omitted.
 
 ```sql
--- ILLUSTRATIVE SHAPE — not the production query.
+-- ILLUSTRATIVE SHAPE, not the production query.
 SELECT id, content, classification
 FROM   documents
 WHERE  classification = ANY(:caller_authorized_classifications)  -- ACL lives here
@@ -58,7 +58,7 @@ LIMIT  :k;
 ```
 
 Two things to note. First, the ACL is a `WHERE` predicate bound to the caller's
-authorized classifications — not a value the model or the orchestrator can
+authorized classifications, not a value the model or the orchestrator can
 influence. Second, the confidence cutoff is a bind parameter, not a literal:
 the actual threshold is tuned and not published.
 
@@ -128,7 +128,7 @@ is covered by the cross-client retrieval regression test, which verifies denial
 on both the classification-filtered and unfiltered paths. The core retrieval
 baseline exercises adversarial ACL probes: eight queries crafted to retrieve
 content the caller is not authorized to see, all blocked at the query layer.
-Runs are executed by the endpoint-agnostic harness — see
+Runs are executed by the endpoint-agnostic harness, see
 [keystone-verify →](verify.md).
 
 Eval artifacts: [keystone-ledger →](https://github.com/getkeystone/keystone-ledger)

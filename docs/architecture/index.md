@@ -2,8 +2,8 @@
 
 Keystone is one platform organized as three implementation layers: **extensions**,
 a **shared runtime**, and **infrastructure**. Each layer depends only on the layer
-beneath it, and only through a contract. That single rule — extensions call
-runtime contracts, the runtime talks to infrastructure — is what makes Keystone a
+beneath it, and only through a contract. That single rule (extensions call
+runtime contracts, the runtime talks to infrastructure) is what makes Keystone a
 platform rather than three applications that happen to share a database.
 
 ## The layered model
@@ -63,32 +63,32 @@ The implementation diagram above is one view. Conceptually, the platform spans
 several layers, some implemented and some research architecture. They are listed
 here so implemented mechanisms are not confused with proposed ones:
 
-1. **Capability layer** — models, prompts, tools, memory, planning. External to
+1. **Capability layer**: models, prompts, tools, memory, planning. External to
    Keystone.
-2. **Orchestration layer** — routing, queues, scheduling, delegation, retries,
+2. **Orchestration layer**: routing, queues, scheduling, delegation, retries,
    recovery.
-3. **Shared runtime implementation** (implemented) — registry, task state,
+3. **Shared runtime implementation** (implemented): registry, task state,
    authorization, event coordination, audit, dispatch. The services documented on
    this page.
-4. **Candidate runtime substrate model** (research) — identity, task state,
+4. **Candidate runtime substrate model** (research): identity, task state,
    tempo, cost, currency, and fidelity as candidate dimensions of governed
    execution. A candidate representation, not an established or complete set. See
    the [substrate model](substrate.md).
-5. **Governance contract** (research) — material-change rules, revalidation
+5. **Governance contract** (research): material-change rules, revalidation
    conditions, and consequence policy (PROCEED, HOLD, DENY, ESCALATE).
-6. **Action boundary** (research architecture) — the progression from generation
+6. **Action boundary** (research architecture): the progression from generation
    to recommendation to evaluation to authorization to commitment. Generalized
    action binding is a proposed architecture, not a demonstrated guarantee; the
    served path today executes retrieval and generation and does not bind external
    consequences.
-7. **Evidence and evaluation** (implemented) — hash-chained audit records,
+7. **Evidence and evaluation** (implemented): hash-chained audit records,
    evaluation artifacts, preserved failure lineage, and the ability to reconstruct
    why an action was handled as it was.
 
 ## Design principles
 
 Seven principles carry most of the platform's identity. They are structural
-choices, not runtime configuration — they hold whether or not any given model
+choices, not runtime configuration. They hold whether or not any given model
 behaves as expected.
 
 1. **Structural governance over heuristic guardrails.** The primary controls are
@@ -102,7 +102,7 @@ behaves as expected.
    predicate is part of the query the database executes, not a filter applied to
    results after they return. Unauthorized rows never leave the database, so a bug
    in an orchestrator, a prompt injection, or a hallucinated citation cannot leak
-   content the caller was not permitted to see — the content was never retrieved.
+   content the caller was not permitted to see, because the content was never retrieved.
 
 3. **Fail-closed by default.** Insufficient authorization refuses; it does not
    partially answer. Low-confidence retrieval refuses; it does not guess. The safe
@@ -127,7 +127,7 @@ behaves as expected.
 
 6. **Cost as a first-class signal.** Every dispatch call carries a budget, a tempo
    target, and a priority; every audit entry records tokens, model, per-call cost,
-   and session-rolling cost. When a budget is exhausted, dispatch short-circuits —
+   and session-rolling cost. When a budget is exhausted, dispatch short-circuits,
    and the short-circuit is a recorded event, not a silent failure. Cost is
    measured and governed on the same path as correctness and authorization.
 
@@ -139,7 +139,7 @@ behaves as expected.
 
 ## Related
 
-- [The substrate model](substrate.md) — the research abstraction and its current instantiation
-- [Extensions overview](../extensions/index.md) — what runs on top of the shared runtime
-- [Evaluation methodology](../evaluation/index.md) — how runs are sealed and preserved
-- [What is public vs private](../access.md) — repository access and boundaries
+- [The substrate model](substrate.md): the research abstraction and its current instantiation
+- [Extensions overview](../extensions/index.md): what runs on top of the shared runtime
+- [Evaluation methodology](../evaluation/index.md): how runs are sealed and preserved
+- [What is public vs private](../access.md): repository access and boundaries

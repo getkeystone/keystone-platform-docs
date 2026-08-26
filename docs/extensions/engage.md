@@ -13,8 +13,8 @@ what it did before the next phase runs.
 ## Who it is for
 
 Engage is built for teams that operate customer interaction under a compliance
-obligation — financial services, healthcare, insurance, and other regulated
-lines of business. It fits the case where a support or advisory conversation is
+obligation (financial services, healthcare, insurance, and other regulated
+lines of business). It fits the case where a support or advisory conversation is
 customer-facing and consequential, where "the model said something we can't
 explain" is not an acceptable outcome, and where a human has to be in the loop
 the moment a situation crosses a severity threshold.
@@ -91,8 +91,8 @@ response returned
 
 ## Sample audit trace shape
 
-The field names below are the audit schema. Concrete values — costs, token
-counts, severity tier, budget — are shown as placeholders here; a live run
+The field names below are the audit schema. Concrete values (costs, token
+counts, severity tier, budget) are shown as placeholders here; a live run
 populates them. No real runtime values or registered agent identifiers are
 published.
 

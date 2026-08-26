@@ -14,13 +14,13 @@ The working research architecture proposes six candidate dimensions of governed
 execution. They are a candidate representation of governance-relevant runtime
 state, not an established or universal set, and not a claim of completeness:
 
-- **Identity** — who or what is acting, and under whose authority.
-- **Task state** — where the unit of work is in its lifecycle.
-- **Tempo** — the time horizon the work is expected to run under.
-- **Cost** — what the work may consume, and what it consumed.
-- **Currency** — whether the justification for an action still holds at the
+- **Identity**: who or what is acting, and under whose authority.
+- **Task state**: where the unit of work is in its lifecycle.
+- **Tempo**: the time horizon the work is expected to run under.
+- **Cost**: what the work may consume, and what it consumed.
+- **Currency**: whether the justification for an action still holds at the
   moment of consequence.
-- **Fidelity** — the bar the result must clear for its context, and the evidence
+- **Fidelity**: the bar the result must clear for its context, and the evidence
   that it did.
 
 The substrate's job is to expose and preserve these governance-relevant facts so
@@ -75,7 +75,7 @@ profile. Every audit entry references an agent by id.
 any one extension. New agents register into the shared registry; an extension
 does not maintain its own private roster. Because identity, tempo, and cost are
 recorded centrally, the dispatch layer and the audit ledger can reason about
-who acted, at what time horizon, and at what cost — without trusting the
+who acted, at what time horizon, and at what cost, without trusting the
 extension to report it.
 
 **What it enables.** An extension composes a pipeline out of registered roles.
@@ -120,14 +120,14 @@ in-memory / file-backed chain and a PostgreSQL-backed chain.
 **Why it exists.** Regulated deployments need an audit record that a reviewer
 can trust months later. Because each entry commits to the hash of the one
 before it, tampering with any entry breaks the chain and is detectable on
-replay — altering the past requires forging every subsequent hash. The audit
+replay, since altering the past requires forging every subsequent hash. The audit
 trail is therefore evidence, not just logging.
 
 **What it enables.** End-to-end replay of a governed session. A fail-closed
 refusal in the Counsel retrieval path is recorded as a first-class entry with
 zero content leaked, so a reviewer can confirm that an unauthorized request was
 denied and that nothing reached application code. The same discipline is what
-lets a sealed evaluation demonstrate structural controls — for example, the
+lets a sealed evaluation demonstrate structural controls. For example, the
 published `keystone-core/retrieval-v1` baseline records all eight adversarial
 ACL probes blocked. An illustrative entry, with placeholders for runtime
 values, looks like:
@@ -149,8 +149,8 @@ entry:
 
 ## 4. Event bus
 
-**What it is.** An asynchronous event bus that carries task lifecycle events —
-`created`, `claimed`, `heartbeat`, `completed`, `failed` — and fans them out to
+**What it is.** An asynchronous event bus that carries task lifecycle events
+(`created`, `claimed`, `heartbeat`, `completed`, `failed`) and fans them out to
 observers. The current implementation is built on NATS JetStream. This is the
 observability path, not the request path; the request path is direct dispatch
 through the coordinator.
@@ -165,8 +165,8 @@ freely.
 **What it enables.** Live observability. The operator console stays current by
 subscribing to lifecycle events rather than polling. A Monitoring function can
 emit signals to the bus and to the tracing pipeline without participating in
-the request path. New observers — additional consoles, external monitors,
-future replicas — attach by subscribing, with no change to the extensions
+the request path. New observers, additional consoles, external monitors,
+future replicas, attach by subscribing, with no change to the extensions
 producing the events.
 
 **Status.** The event bus is implemented on NATS JetStream and is off by
@@ -199,7 +199,7 @@ used, cost in cents, and session-rolling cost.
 **Why it exists.** Cost is a first-class operational signal, not an
 afterthought discovered on an invoice. Because budget travels with the dispatch
 call and rolling cost is recorded on every entry, dispatch can short-circuit
-when a session's budget is exhausted — and the short-circuit is a recorded
+when a session's budget is exhausted, and the short-circuit is a recorded
 event, not a silent failure. Tempo travels the same way, so the dispatch layer
 can honor a call's time horizon rather than treating every model call
 identically.
@@ -238,12 +238,12 @@ cost are uniform across every extension rather than reimplemented per extension.
 
 The substrate runs on local-first infrastructure:
 
-- **PostgreSQL 16 with pgvector** — corpus, embeddings, task state, and the
+- **PostgreSQL 16 with pgvector**: corpus, embeddings, task state, and the
   PostgreSQL-backed audit chain.
-- **Local LLM serving (Ollama / vLLM)** — inference on hardware the operator
+- **Local LLM serving (Ollama / vLLM)**: inference on hardware the operator
   controls; no dependency on a hosted model provider for core operation.
-- **NATS JetStream** — the event bus for task lifecycle fan-out.
-- **OpenTelemetry with a self-hosted trace backend** — traces and per-agent
+- **NATS JetStream**: the event bus for task lifecycle fan-out.
+- **OpenTelemetry with a self-hosted trace backend**: traces and per-agent
   latency, kept in-house.
 
 Internal node identifiers, network topology, and addresses are not published.

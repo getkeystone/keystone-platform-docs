@@ -12,7 +12,7 @@ works. Keystone inverts that. Authorization fails closed at the database layer,
 high-risk interactions gate on severity-tier human review, and every action
 lands in a hash-chained (SHA-256) audit record whose chain is re-verifiable on
 replay by `verify_chain`. The controls
-are structural, not advisory — the kind of precondition a bank, an insurer, or a
+are structural, not advisory: the kind of precondition a bank, an insurer, or a
 legal team would require before putting any system in front of real users and
 regulators.
 
@@ -28,7 +28,7 @@ Start with [Architecture](architecture/index.md) for the layered model and the
 [substrate model](architecture/substrate.md), which covers both the shared
 runtime and the research abstraction.
 [Extensions](extensions/index.md) covers the three capabilities built on that
-shared runtime — [keystone-engage](extensions/engage.md) (governed conversational
+shared runtime: [keystone-engage](extensions/engage.md) (governed conversational
 agent), [keystone-counsel](extensions/counsel.md) (authorization-first
 retrieval), and [keystone-verify](extensions/verify.md) (the standalone
 evaluation harness). [Evaluation](evaluation/index.md) explains the

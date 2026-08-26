@@ -16,11 +16,11 @@ service, or any other governed endpoint without changing the harness itself.
 
 The loop is deliberately small:
 
-1. Declare a **profile** — the endpoint contract, the request template, the
+1. Declare a **profile**: the endpoint contract, the request template, the
    assertion vocabulary, and where cases come from.
-2. Write **cases** — inputs paired with expectations.
+2. Write **cases**: inputs paired with expectations.
 3. Point the harness at a running endpoint and execute.
-4. Read the **run** — per-case results plus run metadata, written to disk
+4. Read the **run**: per-case results plus run metadata, written to disk
    as durable evidence.
 
 Because the profile carries everything endpoint-specific, the judge logic stays
@@ -54,8 +54,8 @@ structured run directory
 ```
 
 This boundary is the point. The thing that gets measured is exactly the thing a
-caller would hit in production — governance decisions, refusals, citations, and
-cost included — not a mocked stand-in that behaves differently from the deployed
+caller would hit in production (governance decisions, refusals, citations, and
+cost included), not a mocked stand-in that behaves differently from the deployed
 service.
 
 ## Profiles
@@ -63,10 +63,10 @@ service.
 A profile is the declarative contract that makes one endpoint measurable. It
 specifies:
 
-- **Endpoint** — where to send requests.
-- **Request template** — how a case's fields render into a request body.
-- **Case source** — where the case set is read from.
-- **Assertion vocabulary** — which classes of check apply, and their
+- **Endpoint**: where to send requests.
+- **Request template**: how a case's fields render into a request body.
+- **Case source**: where the case set is read from.
+- **Assertion vocabulary**: which classes of check apply, and their
   expectations.
 
 Swapping the profile is what re-points the harness from one endpoint to another.
@@ -125,8 +125,8 @@ a proof that the passing system is substantively correct, safe, or compliant.
 The platform ships reference profiles for its own extensions as worked examples
 of the contract:
 
-- **Engage profile** — targets the governed conversational-agent endpoint.
-- **Counsel profile** — targets the authorization-first retrieval endpoint.
+- **Engage profile**: targets the governed conversational-agent endpoint.
+- **Counsel profile**: targets the authorization-first retrieval endpoint.
 
 They are illustrations of a conforming profile, not the limit of what the
 harness can evaluate. Any endpoint that satisfies a profile can be measured the
@@ -141,13 +141,13 @@ boundary and recorded*, not asserted in a README.
 
 Verify gives that testing a fixed shape:
 
-- **Behavior is measured where it is served** — over HTTP, on the same surface a
+- **Behavior is measured where it is served**: over HTTP, on the same surface a
   caller uses.
-- **Governance is a pass/fail dimension** — severity, fail-closed, and latency
+- **Governance is a pass/fail dimension**: severity, fail-closed, and latency
   decisions are checked directly, alongside correctness.
-- **Every measurement is durable** — structured run directories are artifacts,
+- **Every measurement is durable**: structured run directories are artifacts,
   not console output that scrolls away.
-- **Failures are evidence, not noise** — preserved failing runs demonstrate the
+- **Failures are evidence, not noise**: preserved failing runs demonstrate the
   method has teeth.
 
 This turns "we evaluate our system" from a statement into a set of inspectable,

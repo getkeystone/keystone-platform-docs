@@ -8,12 +8,12 @@ Passing and failing runs live side by side in the same ledger.
 ## Principles
 
 1. **Evaluation is a first-class output.** Baselines are versioned, published,
-   and cited — treated with the same rigor as the code they measure.
+   and cited, treated with the same rigor as the code they measure.
 2. **Failing runs are preserved, not deleted.** A run that surfaces real bugs is
    evidence the method works, and it stays in the ledger next to the run that
    fixed it.
 3. **Every published metric is traceable to a sealed artifact.** A number in a
-   table maps to a specific run, its cases, and its raw results — no orphan
+   table maps to a specific run, its cases, and its raw results, with no orphan
    claims.
 4. **Governance is reported alongside quality.** Accuracy without a governance
    figure is half a result. Severity, fail-closed behavior, and citation presence
@@ -25,12 +25,12 @@ Passing and failing runs live side by side in the same ledger.
 
 Baselines follow the naming convention `keystone-{component}/{type}-v{n}`:
 
-- **component** — the system under test (`core`, `engage`, `counsel`).
-- **type** — the evaluation family (`retrieval`, `agent`).
-- **v{n}** — the version, incremented when the case set or method changes.
+- **component**: the system under test (`core`, `engage`, `counsel`).
+- **type**: the evaluation family (`retrieval`, `agent`).
+- **v{n}**: the version, incremented when the case set or method changes.
 
 Versioning is what makes a baseline citable. `keystone-core/agent-v1` names a
-fixed set of cases, an assertion vocabulary, and a sealed result — not "the
+fixed set of cases, an assertion vocabulary, and a sealed result, not "the
 latest run of the agent tests." When the case set changes, the version
 increments and the prior baseline stays addressable.
 
@@ -60,7 +60,7 @@ evaluation to 186 spec-compliant cases is what surfaced defects the smaller run
 had missed. That expanded run, `keystone-core/agent-v0`, produced nine failing
 cases traced to four distinct root-cause implementation defects. It is preserved
 as a sealed artifact next to the passing `keystone-core/agent-v1` baseline. The
-failing run is not an embarrassment — it is evidence that the evaluation process
+failing run is not an embarrassment. It is evidence that the evaluation process
 can surface real implementation defects. It is evidence about the evaluation
 method, not a proof of the system's substantive correctness, safety, or
 compliance.
@@ -75,7 +75,7 @@ from.
 
 The evaluation ledger is published at
 [keystone-ledger](https://github.com/getkeystone/keystone-ledger). It holds the
-sealed artifacts — case sets, run metadata, and raw results — that back every
+sealed artifacts (case sets, run metadata, and raw results) that back every
 figure in the table above. Because the artifacts are versioned and preserved, a
 published metric can be re-derived from its source at any time.
 

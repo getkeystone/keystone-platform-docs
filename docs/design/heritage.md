@@ -23,7 +23,7 @@ That job forced a set of solutions long before "agent safety" was a phrase:
 
 Those were operational requirements, not research questions. The LLM era is now
 rediscovering the same requirements from first principles. Keystone does not
-rediscover them — it ports the practice to a substrate where the reasoning step
+rediscover them. It ports the practice to a substrate where the reasoning step
 is a language model instead of a hand-built dialog engine.
 
 ## Pattern mapping
@@ -60,7 +60,7 @@ append-only, hash-chained audit ledger: each entry carries the hash of the entry
 before it, so tampering breaks the chain and is detectable on replay.
 
 **Fail-closed at retrieval ← confidence-threshold escalation.** When a bot's
-retrieval or intent confidence fell below threshold, it did not guess — it
+retrieval or intent confidence fell below threshold, it did not guess. It
 escalated. Keystone makes the retrieval boundary fail-closed for the same
 reason: if the system cannot ground an answer in authorized evidence, the safe
 default is to withhold and escalate, not to improvise.
@@ -82,7 +82,7 @@ path that exports it.
 ## The builder's background
 
 Keystone is built by an engineer with 12+ years at Genesys building enterprise
-contact-center and cloud systems — Knowledge Center retrieval,
+contact-center and cloud systems, including Knowledge Center retrieval,
 the chat suite, e-services, and contact analytics. That was the pre-LLM era of
 conversational AI: the systems that had to be auditable, escalatable, and safe
 to run against real customers before large language models existed.
@@ -98,7 +98,7 @@ More on the builder: [arnaldosepulveda.com](https://arnaldosepulveda.com) ·
 
 The substrate changed; the discipline did not.
 
-The reasoning step is now a language model — nondeterministic, capable of tool
+The reasoning step is now a language model, nondeterministic, capable of tool
 use, and grounded in retrieval rather than a hand-authored dialog tree. That
 raises the stakes on every one of the patterns above, because a model will
 confidently attempt actions a slot-filling engine never could. It does not make

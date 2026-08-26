@@ -1,6 +1,16 @@
 # Keystone Applied Intelligence
 
-Keystone is an independent engineering and R&D platform for building and
+**Keystone Applied Intelligence** is the independent engineering and R&D
+practice of Arnaldo Sepulveda. Keystone's engineering platform (documented on
+this site) contains implemented shared runtime capabilities and applied
+workloads. **Governed Execution** is the broader runtime-governance research
+program and reference platform that this engineering work feeds into. **Track
+A Runtime Validity** ([GitHub](https://github.com/getkeystone/track-a-runtime-validity))
+is a bounded public research implementation within Governed Execution; it does
+not validate the broader platform. This distinction is used consistently
+throughout these docs.
+
+Keystone is an independent engineering and R&D practice for building and
 evaluating governed AI systems in regulated and high-consequence environments.
 
 The work focuses on the runtime layer between model capability and production
@@ -112,15 +122,16 @@ candidate dimensions remain hypotheses to test.
 
 ## What is public vs private
 
-| Surface                                           | Status  |
-|---------------------------------------------------|---------|
-| Platform documentation (this site)                | Public  |
-| keystone-ledger — published evaluation ledger     | Public  |
-| keystone-verify — evaluation framework            | Public  |
-| keystone-engage — governed conversational agent   | Public  |
-| keystone-gov — governed RAG reference             | Public  |
-| keystone-counsel — authorization-first retrieval  | Public  |
-| Deployment configuration and infrastructure detail| Private |
+| Surface                                                      | Status  |
+|---------------------------------------------------------------|---------|
+| Platform documentation (this site)                             | Public  |
+| keystone-ledger, published evaluation ledger                   | Public  |
+| keystone-verify, evaluation framework                          | Public  |
+| keystone-engage, governed conversational agent                 | Public  |
+| keystone-gov, governed RAG reference                            | Public  |
+| keystone-counsel, authorization-first retrieval                 | Public  |
+| track-a-runtime-validity, Governed Execution research track     | Public  |
+| Deployment configuration and infrastructure detail              | Private |
 
 The architecture, evaluation outcomes, and design rationale are public, and so is
 the source: all five repositories are public. Deployment configuration and

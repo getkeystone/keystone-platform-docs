@@ -1,7 +1,7 @@
 # Extensions
 
 Keystone is three extensions running on shared runtime services. Each extension
-targets a different regulated workload — conversation, retrieval, evaluation —
+targets a different regulated workload (conversation, retrieval, evaluation)
 but none of them rebuilds governance, audit, authorization, or dispatch from
 scratch. They plug into a common shared runtime that provides those primitives once,
 so each extension is the workload logic and nothing more.
