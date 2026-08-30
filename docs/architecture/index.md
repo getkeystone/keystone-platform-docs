@@ -1,145 +1,234 @@
 # System architecture
 
-Keystone is one platform organized as three implementation layers: **extensions**,
-a **shared runtime**, and **infrastructure**. Each layer depends only on the layer
-beneath it, and only through a contract. That single rule (extensions call
-runtime contracts, the runtime talks to infrastructure) is what makes Keystone a
-platform rather than three applications that happen to share a database.
+Keystone Applied Intelligence is an engineering platform composed of several
+public implementations and supporting evidence repositories. The current public
+work should not be interpreted as one fully composed runtime shared by every
+workload.
 
-## The layered model
+The architecture uses a **shared-substrate design direction**: authorization,
+task state, audit evidence, evaluation, and resource metadata are treated as
+runtime concerns that can be composed into stronger common services over time.
+Today, however, those mechanisms exist at different levels of maturity and are
+not uniformly implemented across the public repositories.
 
+## Current engineering view
+
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│  Workload implementations                                       │
+│                                                                  │
+│  keystone-gov        keystone-engage        keystone-counsel     │
+│  governed RAG        conversational agent    authorization-first  │
+│                                              retrieval            │
+└──────────────────────────────────────────────────────────────────┘
+             │                  │                    │
+             │ implementation-specific runtime mechanisms          │
+             ▼                  ▼                    ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  Runtime mechanisms                                              │
+│                                                                  │
+│  authorization       task state         audit/evidence           │
+│  retrieval controls  orchestration      resource metadata        │
+│  human routing       optional events    observability            │
+└──────────────────────────────────────────────────────────────────┘
+
+                   external evaluation
+                           │
+                           ▼
+                 ┌────────────────────┐
+                 │  keystone-verify  │
+                 │  HTTP evaluation  │
+                 │  harness          │
+                 └────────────────────┘
+                           │
+                           ▼
+                 ┌────────────────────┐
+                 │  keystone-ledger  │
+                 │  retained public  │
+                 │  evaluation       │
+                 │  lineage          │
+                 └────────────────────┘
 ```
-┌────────────────────────────────────────────────────────────────┐
-│  Extensions                                                      │
-│    keystone-engage      keystone-counsel      keystone-verify    │
-└────────────────────────────────────────────────────────────────┘
-                          │  call runtime contracts
-                          ▼
-┌────────────────────────────────────────────────────────────────┐
-│  Shared runtime                                                  │
-│    agents registry          task state machine (9 states)        │
-│    hash-chained audit        NATS JetStream event bus            │
-│    query-time authz          cost-aware dispatch                 │
-└────────────────────────────────────────────────────────────────┘
-                          │  contracts talk to infrastructure
-                          ▼
-┌────────────────────────────────────────────────────────────────┐
-│  Infrastructure                                                  │
-│    PostgreSQL 16 + pgvector           NATS JetStream            │
-│    local LLM serving (Ollama / vLLM)                            │
-│    OpenTelemetry + self-hosted trace backend                    │
-└────────────────────────────────────────────────────────────────┘
-```
 
-Three properties hold this model together:
+This diagram is an engineering inventory, not a claim that the mechanisms form
+one deployed service.
 
-- **Extensions never touch infrastructure directly.** An extension does not open
-  a database connection, publish to the event bus, or call an inference backend
-  on its own. It calls a runtime contract, and the shared runtime mediates the
-  infrastructure. This keeps governance, authorization, and audit on the request
-  path instead of scattered through application code.
+## Implemented workload boundaries
 
-- **Extensions do not rebuild shared capabilities.** The agents registry, task
-  state machine, audit ledger, event bus, query-time authorization, and
-  cost-aware dispatch live in the shared runtime once. Extensions consume them; they do not each carry a
-  private roster, a private audit format, or a private budget mechanism. Adding
-  an extension is a matter of consuming existing contracts, not re-implementing
-  the platform.
+### keystone-gov
 
-- **Infrastructure is replaceable in principle.** Swapping an inference backend or
-  migrating a data plane is intended to be a change at the runtime layer rather
-  than in the extensions, which never name the backend directly. How completely
-  the governance semantics survive such a swap is a research question, not a
-  demonstrated portability property.
+`keystone-gov` is a governed RAG reference implementation. Its served query path
+includes authorization-aware retrieval, PostgreSQL full-text and pgvector
+retrieval, evidence thresholds, local generation, and per-record keyed
+HMAC-SHA256 audit integrity.
 
-For the six implemented runtime services and how they compose, see the
-[substrate model](substrate.md), which documents both the research abstraction
-and its current instantiation. For what each extension does on top of them, see
-the [extensions overview](../extensions/index.md).
+Its authorization predicates are applied during retrieval rather than only
+after records are returned. This is an implementation property of this workload,
+not a platform-wide guarantee.
 
-## Conceptual layers
+### keystone-engage
 
-The implementation diagram above is one view. Conceptually, the platform spans
-several layers, some implemented and some research architecture. They are listed
-here so implemented mechanisms are not confused with proposed ones:
+`keystone-engage` provides the current conversational-agent workload. The
+normal served path is a single governed agent. A separate multi-agent
+Coordinator is implemented behind configuration and is not the default route.
 
-1. **Capability layer**: models, prompts, tools, memory, planning. External to
-   Keystone.
-2. **Orchestration layer**: routing, queues, scheduling, delegation, retries,
-   recovery.
-3. **Shared runtime implementation** (implemented): registry, task state,
-   authorization, event coordination, audit, dispatch. The services documented on
-   this page.
-4. **Candidate runtime substrate model** (research): identity, task state,
-   tempo, cost, currency, and fidelity as candidate dimensions of governed
-   execution. A candidate representation, not an established or complete set. See
-   the [substrate model](substrate.md).
-5. **Governance contract** (research): material-change rules, revalidation
-   conditions, and consequence policy (PROCEED, HOLD, DENY, ESCALATE).
-6. **Action boundary** (research architecture): the progression from generation
-   to recommendation to evaluation to authorization to commitment. Generalized
-   action binding is a proposed architecture, not a demonstrated guarantee; the
-   served path today executes retrieval and generation and does not bind external
-   consequences.
-7. **Evidence and evaluation** (implemented): hash-chained audit records,
-   evaluation artifacts, preserved failure lineage, and the ability to reconstruct
-   why an action was handled as it was.
+The implementation includes task-state mechanisms, severity-based human
+routing, audit records, observability instrumentation, and optional NATS
+JetStream integration for the multi-agent/event path.
+
+NATS is not required by the normal served request path and should not be read as
+a currently deployed shared event service across the platform.
+
+Dispatch and audit schemas include tempo, budget, model, token, and cost-related
+fields. Real cost-based model selection and end-to-end budget enforcement have
+not yet been demonstrated.
+
+### keystone-counsel
+
+`keystone-counsel` implements authorization-first retrieval using role and
+classification constraints together with client isolation in the database
+query.
+
+The client-isolation mechanism is implemented and regression-tested. The
+published corpus used for the current example does not establish a full
+production multi-client deployment, and there is no dedicated Counsel evaluation
+baseline in the public ledger.
+
+### keystone-verify
+
+`keystone-verify` is external evaluation infrastructure, not a workload running
+inside the Keystone runtime.
+
+It is a standalone harness that can evaluate compatible HTTP endpoints through
+structured profiles and cases and write structured result and run-metadata
+artifacts.
+
+Historical `keystone-core/*` evaluation artifacts in
+[keystone-ledger](https://github.com/getkeystone/keystone-ledger) predate the
+current Verify CLI and should not be assumed to have been produced by it.
+
+## Shared-substrate mechanisms
+
+The public implementations contain several related mechanisms that motivate the
+shared-substrate design.
+
+### Authorization and retrieval controls
+
+Authorization is enforced differently by workload.
+
+`keystone-gov` applies role, domain, and jurisdiction constraints during
+retrieval. `keystone-counsel` applies classification and client-isolation
+predicates in its retrieval query. `keystone-engage` applies its own
+corpus-scope authorization logic.
+
+These mechanisms support a design direction in which authority is checked before
+governed retrieval or action, but they are not evidence of one shared
+authorization service.
+
+### Task state
+
+Engage contains an explicit task-state implementation with validated
+transitions and mechanisms for heartbeat, stuck-task handling, takeover, and
+rescheduling.
+
+Not every state or lifecycle mechanism is exercised by the normal served path.
+The implementation therefore supports evaluation of these mechanisms but does
+not establish distributed workflow guarantees.
+
+### Audit and evidence
+
+Audit implementations differ across workloads.
+
+Engage and Counsel use unkeyed SHA-256 hash chaining. `keystone-gov` uses a
+keyed HMAC-SHA256 integrity value per record with different coverage and
+verification semantics.
+
+These mechanisms provide implementation-specific integrity and lineage
+properties. They do not establish semantic correctness, authorization validity,
+or one common platform audit service.
+
+### Events and observability
+
+Engage contains optional NATS JetStream integration for the multi-agent/event
+path and OpenTelemetry instrumentation.
+
+The NATS path is off by default and is not evidence that a shared event bus is
+deployed across Keystone workloads.
+
+### Cost and resource metadata
+
+Runtime schemas contain budget, tempo, model, token, and cost-related fields.
+These are implemented data and interface mechanisms.
+
+Active cost-based model selection, complete budget enforcement, and
+platform-wide resource governance remain future engineering or evaluation work.
+
+## Engineering architecture and research architecture
+
+The engineering platform and the Governed Execution research architecture are
+related but not interchangeable.
+
+The controlling Governed Execution architecture separates:
+
+1. **Control plane**: authority, policy, admissibility, placement, budget, and
+   release decisions.
+2. **Execution plane**: models, retrieval, tools, delegation, and workflows.
+3. **Evidence plane**: decisions, authorizations, actions, evaluations, failures,
+   and outcomes.
+4. **Action boundary**: the boundary at which output may create an external
+   consequence.
+
+The public Keystone implementations provide engineering mechanisms that can be
+used to investigate parts of this architecture. They do not demonstrate a
+complete Governed Execution Runtime.
+
+The candidate substrate dimensions of Identity, Task state, Tempo, Cost,
+Currency, and Fidelity are research hypotheses, not a complete ontology and not
+a list of implemented Keystone services.
+
+See the [substrate model](substrate.md) for that research abstraction.
 
 ## Design principles
 
-Seven principles carry most of the platform's identity. They are structural
-choices, not runtime configuration. They hold whether or not any given model
-behaves as expected.
+The following principles describe the direction of the engineering work without
+asserting that every workload currently implements every control.
 
-1. **Structural governance over heuristic guardrails.** The primary controls are
-   structural: authorization checks that fail closed and run before generation,
-   severity-tier human review on high-risk interactions, and integrity-checked
-   audit records. Model-based filters exist as defense in depth, but they are
-   never the sole control. A prompt that talks its way past a model has not talked
-   its way past a database predicate.
+1. **Authority should be checked before governed consequence.**
+   Authorization and admissibility should be evaluated before the system crosses
+   a consequential boundary, rather than inferred from model output afterward.
 
-2. **Authorization before retrieval, at the database layer.** The authorization
-   predicate is part of the query the database executes, not a filter applied to
-   results after they return. Unauthorized rows never leave the database, so a bug
-   in an orchestrator, a prompt injection, or a hallucinated citation cannot leak
-   content the caller was not permitted to see, because the content was never retrieved.
+2. **Evidence should accompany consequential decisions.**
+   Decisions, authorizations, actions, failures, and evaluations should produce
+   evidence sufficient for later reconstruction. Current implementations provide
+   partial mechanisms toward that goal; complete external reconstructability is
+   not yet established.
 
-3. **Fail-closed by default.** Insufficient authorization refuses; it does not
-   partially answer. Low-confidence retrieval refuses; it does not guess. The safe
-   state on ambiguity is refusal with an audited reason, not a best-effort
-   response.
+3. **Failure behavior should be explicit.**
+   Where a workload defines a fail-closed condition, ambiguous or unauthorized
+   states should produce an explicit refusal, hold, or escalation rather than an
+   unsupported best-effort result.
 
-4. **Hash-chained audit trail.** Every retrieval, authorization decision, and
-   escalation writes an append-only, SHA-256 hash-chained audit entry (the shared
-   runtime is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record). Each
-   entry carries the hash of the entry before it, and `verify_chain` walks the
-   full ledger on replay, so an edit or deletion breaks the chain and is
-   detectable. The audit trail is evidence, not a log that can be quietly rewritten.
+4. **Evaluation should preserve failures as well as successes.**
+   Passing and failing internal evaluation artifacts are retained so changes can
+   be compared against prior observed behavior. A retained failing run shows what
+   that evaluation configuration detected; it does not prove general system
+   safety or correctness.
 
-5. **Sealed failing runs preserved alongside passing runs.** Evaluation runs are
-   sealed as durable artifacts in the ledger, and a failing run is not deleted
-   when a passing run replaces it. Both are kept. As a published example, the sealed failing
-   baseline `keystone-core/agent-v0` (186 cases; 9 failing cases from 4 root-cause
-   defects) sits next to the passing `keystone-core/agent-v1` (186 cases, 558
-   executions, 0 failures).
-   The failing run is the evidence that the methodology finds real bugs. See the
-   [evaluation methodology](../evaluation/index.md).
+5. **Orchestration and governance are distinct concerns.**
+   Orchestration determines how work proceeds. Governance determines whether the
+   intended consequence remains justified to proceed.
 
-6. **Cost as a first-class signal.** Every dispatch call carries a budget, a tempo
-   target, and a priority; every audit entry records tokens, model, per-call cost,
-   and session-rolling cost. When a budget is exhausted, dispatch short-circuits,
-   and the short-circuit is a recorded event, not a silent failure. Cost is
-   measured and governed on the same path as correctness and authorization.
-
-7. **Local-first deployment.** Every runtime component runs on hardware the
-   operator controls: the database, the event bus, the trace backend, and the
-   model serving. There is no required dependency on an external inference API.
-   Regulated operators can run the platform inside their own boundary, which is
-   the point.
+6. **Implementation claims should remain bounded.**
+   Implemented code, served behavior, retained evaluation results, deployment
+   state, and research hypotheses are separate categories and should be reported
+   separately.
 
 ## Related
 
-- [The substrate model](substrate.md): the research abstraction and its current instantiation
-- [Extensions overview](../extensions/index.md): what runs on top of the shared runtime
-- [Evaluation methodology](../evaluation/index.md): how runs are sealed and preserved
+- [The substrate model](substrate.md): the research abstraction and candidate
+  substrate dimensions
+- [Extensions overview](../extensions/index.md): the current workload
+  implementations and evaluation harness
+- [Evaluation methodology](../evaluation/index.md): retained internal evaluation
+  evidence and its limits
 - [What is public vs private](../access.md): repository access and boundaries
