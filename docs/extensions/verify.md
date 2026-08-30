@@ -1,171 +1,142 @@
 # keystone-verify
 
-Endpoint-agnostic evaluation harness for governed AI systems. Verify runs
-against any HTTP endpoint that satisfies a structured profile and scores the
-responses against an assertion vocabulary. It writes a structured, reproducible
-run for each execution, and failing runs are preserved next to the passing runs
-that replaced them.
-
 ## What it does
 
-Verify turns "does this system behave correctly under governance" into a
-repeatable, artifact-producing measurement. It is not tied to any single model,
-extension, or deployment: it evaluates behavior at the network boundary, so the
-same harness measures a conversational agent, an authorization-first retrieval
-service, or any other governed endpoint without changing the harness itself.
+Keystone Verify is a standalone HTTP evaluation harness. A profile describes
+how to call a compatible endpoint and map its response fields. A JSONL cases
+file supplies requests and declarative assertions. The runner calls the
+endpoint, the judge evaluates each response, and the reporter writes structured
+results and run metadata.
 
-The loop is deliberately small:
+Verify evaluates the HTTP response surface. It does not import the system under
+test or inspect its internal control flow. A passing assertion therefore
+describes observed response behavior for that case, not the correctness of the
+implementation mechanism behind it.
 
-1. Declare a **profile**: the endpoint contract, the request template, the
-   assertion vocabulary, and where cases come from.
-2. Write **cases**: inputs paired with expectations.
-3. Point the harness at a running endpoint and execute.
-4. Read the **run**: per-case results plus run metadata, written to disk
-   as durable evidence.
+## Inputs
 
-Because the profile carries everything endpoint-specific, the judge logic stays
-generic and the same evaluation discipline applies uniformly across every
-extension on the platform.
+A run takes two explicit inputs:
 
-## Endpoint-agnostic by design
+- a **profile** containing the base URL, endpoint, HTTP method, timeout, and
+  response-field mappings; and
+- a **cases file** containing request dictionaries, categories, buckets, and
+  assertions.
 
-Verify evaluates over HTTP. It does not import the system under test, share a
-process with it, or reach into its internals. It substitutes each case into the
-profile's request template, sends the request, and evaluates the response that
-comes back over the wire.
+Profiles make the harness compatible with endpoints whose response shapes can be
+mapped to Verify's model. They do not make every HTTP endpoint evaluable without
+configuration.
 
-```
-profile (endpoint contract + assertions + case source)
-    |
-    v
-[case iterator]        reads cases from the declared source
-    |
-    v
-[executor]             renders each case into the request template,
-    |                  calls the endpoint, captures response + timing
-    v
-[judge]                pure-function evaluators applied per assertion class
-    |
-    v
-[reporter]             writes results.json and run_metadata.json
-    |
-    v
-structured run directory
-```
+## Current request path
 
-This boundary is the point. The thing that gets measured is exactly the thing a
-caller would hit in production (governance decisions, refusals, citations, and
-cost included), not a mocked stand-in that behaves differently from the deployed
-service.
+    profile + cases
+        |
+    load and validate inputs
+        |
+    send each case to the profile's HTTP endpoint
+        |
+    measure latency and parse the JSON response
+        |
+    judge(case, response, profile, latency)
+        |
+    aggregate results
+        |
+    write results.json and run_metadata.json
 
-## Profiles
-
-A profile is the declarative contract that makes one endpoint measurable. It
-specifies:
-
-- **Endpoint**: where to send requests.
-- **Request template**: how a case's fields render into a request body.
-- **Case source**: where the case set is read from.
-- **Assertion vocabulary**: which classes of check apply, and their
-  expectations.
-
-Swapping the profile is what re-points the harness from one endpoint to another.
-The executor, judge, and reporter are unchanged; only the profile differs. This
-is why a single evaluation framework can hold every extension to the same
-standard.
+The judge is a pure function with unit coverage. Network I/O and timing belong
+to the runner; filesystem output belongs to the reporter.
 
 ## Assertion vocabulary
 
-The judge is a set of pure-function evaluators grouped into assertion
-classes. A case can carry assertions from any combination of them.
+The current judge supports:
 
-| Class          | What it checks                                                                    |
-|----------------|----------------------------------------------------------------------------------|
-| **Literal**    | Exact-match and containment checks: string equality, contains / contains-any / absent. |
-| **Structural** | Minimum length and citation presence on the response.                            |
-| **Semantic**   | Meaning-level checks: citations resolve to the expected sources; the answer entails the expected claim. |
-| **Governance** | The response's severity, fail-closed flag, and latency fall in the expected set. |
+| Assertion | Current check |
+|---|---|
+| `severity` | exact mapped severity |
+| `severity_in` | mapped severity belongs to an allowed set |
+| `min_length` | mapped answer meets a minimum length |
+| `contains` | all required substrings appear |
+| `contains_any` | at least one required substring appears |
+| `absent` | prohibited substrings do not appear |
+| `has_citations` | mapped citations are present or absent as expected |
+| `fail_closed` | mapped refusal flag matches |
+| `max_latency_ms` | measured request latency stays within the case limit |
 
-The governance class is what makes this an evaluation vocabulary for *governed*
-AI rather than a generic API test runner. A response can be fluent, well-formed,
-and still wrong because it allowed something it should have denied. That is a
-first-class pass/fail criterion here, not an afterthought.
+These are deterministic assertions over mapped response fields and measured
+latency. The current judge does not implement a general semantic-entailment
+model or verify that cited source material actually supports the answer.
 
-## Structured runs, preserved failures
+## Output and retention boundary
 
-A run produces a structured directory: a durable record of what was measured,
-against which cases, with what result. Each run carries per-case outcomes
-(`results.json`), run-level metadata such as latency
-(`run_metadata.json`), the case set, and the judge configuration. These are
-plain JSON files with no content-integrity seal; the ledger is what seals and
-versions a run.
+Each run writes:
 
-The discipline that matters most: **a failing run is not deleted when a passing
-run replaces it.** Both are kept, side by side. The failing run is retained as
-evidence that the methodology surfaces real defects rather than rubber-stamping
-whatever the system happens to do.
+- `results.json`, containing one structured result per case; and
+- `run_metadata.json`, containing the profile name, timestamp, aggregate
+  counts, category and bucket summaries, and latency statistics.
 
-Two published examples from the evaluation ledger illustrate the pattern:
+The optional `--content-checksum` flag adds a SHA-256 checksum to
+`run_metadata.json`. It is off by default and is documented in code as an aid
+for detecting accidental modification, not as cryptographic sealing or
+tamper-evidence.
 
-```
-agent-v0   sealed, FAILING   186 cases   9 failing cases, 4 root-cause defects
-agent-v1   sealed, PASSING    186 cases   558 executions, 0 failures
-```
+Verify writes run output to the selected local directory. It does not own
+historical retention or automatically publish artifacts to
+[keystone-ledger](https://github.com/getkeystone/keystone-ledger). Retaining both
+passing and failing runs is a repository and evaluation-process choice outside
+the current CLI.
 
-The `agent-v0` run failed, and it failed usefully: its nine failing cases traced
-to four distinct root-cause implementation defects. Those were fixed, and
-`agent-v1` became the canonical passing baseline. The
-failing run stays in the ledger next to the passing one. A methodology that only
-ever produces green checkmarks has not been shown to detect anything; a
-preserved red run is evidence that it can. This is evidence about detection, not
-a proof that the passing system is substantively correct, safe, or compliant.
+## Profiles and examples
 
-## Reference profiles
+The repository includes:
 
-The platform ships reference profiles for its own extensions as worked examples
-of the contract:
+- profiles for locally served Engage and Counsel endpoints;
+- vendor-neutral reference profiles for hypothetical governed endpoints; and
+- a self-contained example profile that calls a public echo service.
 
-- **Engage profile**: targets the governed conversational-agent endpoint.
-- **Counsel profile**: targets the authorization-first retrieval endpoint.
+These are worked examples of the profile contract. A profile's existence does
+not establish that its target service is running, deployed, or evaluated in a
+particular environment.
 
-They are illustrations of a conforming profile, not the limit of what the
-harness can evaluate. Any endpoint that satisfies a profile can be measured the
-same way.
+## Evaluation interpretation
 
-## Why this matters for governed AI
+A Verify run can test defined response behaviors such as refusal flags,
+citations being present, severity values, string conditions, and latency. It
+cannot by itself establish:
 
-Governed systems make claims that are expensive to be wrong about: this request
-was authorized, this content was permitted,
-this answer is grounded in a real source. Those claims need to be *tested at the
-boundary and recorded*, not asserted in a README.
+- that authentication or authorization policy is correct;
+- that a citation semantically supports an answer;
+- that logs prove a decision was justified;
+- that an evaluated service is production-suitable;
+- that results generalize beyond the evaluated cases and configuration; or
+- that an internal result is independent validation.
 
-Verify gives that testing a fixed shape:
+A passing run belongs to the evaluated endpoint version, profile, cases, and
+configuration. A failing run can identify which assertions failed in that run;
+it does not establish that the evaluation methodology generally detects all
+relevant defects.
 
-- **Behavior is measured where it is served**: over HTTP, on the same surface a
-  caller uses.
-- **Governance is a pass/fail dimension**: severity, fail-closed, and latency
-  decisions are checked directly, alongside correctness.
-- **Every measurement is durable**: structured run directories are artifacts,
-  not console output that scrolls away.
-- **Failures are evidence, not noise**: preserved failing runs demonstrate the
-  method has teeth.
+## Historical artifact boundary
 
-This turns "we evaluate our system" from a statement into a set of inspectable,
-reproducible artifacts.
+The current Verify CLI should not be retroactively attributed as the producer of
+historical `keystone-core` artifacts without specific lineage evidence. Those
+retained artifacts describe historical systems under test and evaluation
+processes. Verify's current implementation should be documented from its own
+runner, judge, reporter, profiles, and generated output.
 
-## What is public here
+## Relationship to the broader platform
 
-This page documents the **methodology**: the endpoint-agnostic harness model,
-the profile contract, the assertion vocabulary, and the structured-run discipline
-with preserved failures. That methodology is public because it is the substance
-of the approach.
+Verify is external evaluation infrastructure, not a workload running on the
+Engage or Counsel runtime. It can evaluate compatible HTTP endpoints through
+profiles and produce structured run artifacts. Ledger separately retains
+selected internal evaluation evidence and lineage.
 
-The keystone-verify **framework and implementation** are open source:
+## Source code
+
+The framework and implementation are public at
 [github.com/getkeystone/keystone-verify](https://github.com/getkeystone/keystone-verify).
 
 ## Related
 
-- [Evaluation methodology and ledger →](../evaluation/index.md)
-- [keystone-engage →](engage.md)
-- [keystone-counsel →](counsel.md)
-- [What is public vs private →](../access.md)
+- [Evaluation methodology and Ledger](../evaluation/index.md)
+- [keystone-engage](engage.md)
+- [keystone-counsel](counsel.md)
+- [What is public vs private](../access.md)
