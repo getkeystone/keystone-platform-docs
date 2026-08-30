@@ -40,10 +40,10 @@ advisory content. Classification-aware vector-similarity ACL filtering enforced
 at the database layer. Fail-closed under insufficient authorization or
 insufficient confidence.
 
-**keystone-verify.** Standalone, endpoint-agnostic evaluation harness. Produces
-structured evaluation results and run metadata for HTTP-based evaluation using
-structured profiles and assertions. Passing and failing evaluation lineage is
-retained separately in keystone-ledger.
+**keystone-verify.** Standalone HTTP evaluation harness for compatible endpoints.
+Produces structured evaluation results and run metadata using profiles and
+deterministic assertions. Passing and failing evaluation lineage is retained
+separately in keystone-ledger.
 [View on GitHub →](https://github.com/getkeystone/keystone-verify)
 
 ## Shared-substrate mechanisms
@@ -73,9 +73,9 @@ varying degrees of maturity and composition:
   request path and off by default.
 - **Query-time authorization.** Access control enforced before retrieval. Engage
   uses a corpus-scope ACL (role to allowed corpora, fail-closed); Counsel enforces
-  a classification and client-isolation `WHERE` clause in the retrieval query, so
-  unauthorized rows never return. An MCP server entry point is scaffolded but not
-  wired to the served path.
+  a classification and client-isolation `WHERE` clause in the retrieval query.
+  Records excluded by those predicates are not returned through that query. An
+  MCP server entry point is scaffolded but not wired to the served path.
 - **Cost/budget fields.** Dispatch and audit schemas carry budget, tempo, and
   cost fields, but real cost-based model selection and budget enforcement are
   not yet exercised end to end.
@@ -105,8 +105,8 @@ semantics survive replacement of those components remains an empirical research
 question rather than a demonstrated portability property.
 
 The design rationale traces to a specific origin: the operational rigor the
-contact-center industry already built for compliance and governance, rebuilt for
-LLM-based systems. See [contact-center heritage →](design/heritage.md).
+contact-center industry already built for compliance and governance informs the
+design for LLM-based systems. See [contact-center heritage →](design/heritage.md).
 
 ## Engineering platform and research model
 
