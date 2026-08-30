@@ -96,15 +96,22 @@ It is open source and can target compatible HTTP endpoints through evaluation
 profiles. The historical
 `keystone-core/*` artifacts listed above are retained in keystone-ledger and
 should not be assumed to have been produced by the current Verify CLI. The
-framework provides:
+current framework provides:
 
-- A **profile system** (JSON) for declaring endpoints, request templates, and
-  assertion vocabularies.
-- A **pure-function judge engine** with assertion types: literal, structural,
-  semantic, and governance.
-- A **structured-artifact reporter** that writes machine-readable results and run
-  metadata, preserving both failing and passing runs.
+- A **profile system** (JSON) for declaring endpoint connection details and
+  mapping response fields into the judge model.
+- A separate **cases file** (JSONL) containing request dictionaries and
+  deterministic assertions.
+- A **pure-function judge engine** for severity, string conditions, minimum
+  length, citation presence, fail-closed flags, and latency limits. It does not
+  implement general semantic entailment or source-support verification.
+- A **structured-artifact reporter** that writes `results.json` and
+  `run_metadata.json` to a selected local directory.
 - A **CLI** for running evaluations locally or in CI.
+
+The reporter does not own historical retention or automatically publish output
+to keystone-ledger. Retaining both passing and failing runs is a separate
+repository and evaluation-process choice.
 
 The [keystone-verify page](../extensions/verify.md) covers the full
 methodology and assertion model. Source:
