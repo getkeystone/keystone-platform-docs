@@ -5,8 +5,9 @@ services. The runtime substrate is a conceptual, durable semantic layer: the
 governance-relevant facts about a unit of work that should stay meaningful even
 as models, frameworks, and providers change beneath them. The implemented
 services on the [architecture overview](index.md) and the
-[shared runtime](../index.md#the-shared-runtime) are one current instantiation
-of this abstraction, not its definition.
+[shared-substrate mechanisms](../index.md#shared-substrate-mechanisms) provide
+current engineering examples of this abstraction. They are not a single
+composed runtime and do not define the abstraction itself.
 
 ## Candidate substrate dimensions
 

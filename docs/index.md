@@ -2,10 +2,9 @@
 
 **Keystone Applied Intelligence** is the independent engineering and R&D
 practice of Arnaldo Sepulveda. Keystone's engineering platform (documented on
-this site) contains implemented shared runtime capabilities and applied
-workloads. **Governed Execution** is the broader runtime-governance research
-program and reference platform that this engineering work feeds into. **Track
-A Runtime Validity** ([GitHub](https://github.com/getkeystone/track-a-runtime-validity))
+this site) contains implemented runtime mechanisms and applied workloads. **Governed Execution** is the broader runtime-governance research
+program and reference platform that this engineering work feeds into.
+**Runtime Validity (Track A)** ([GitHub](https://github.com/getkeystone/runtime-validity))
 is a bounded public research implementation within Governed Execution; it does
 not validate the broader platform. This distinction is used consistently
 throughout these docs.
@@ -17,9 +16,9 @@ The work focuses on the runtime layer between model capability and production
 consequence: authorization, task state, evidence, evaluation, auditability,
 observability, and fail-closed behavior.
 
-Three extensions run on shared runtime services, with authorization, execution
-state, audit evidence, and evaluation designed into the architecture rather than
-added only at the application boundary.
+The engineering platform is built on a shared-substrate design, with
+authorization, execution state, audit evidence, and evaluation designed into
+the architecture rather than added only at the application boundary.
 
 The platform is intended for workloads where responses and actions must operate
 under explicit authority, evidence, and review constraints: customer
@@ -32,60 +31,73 @@ infrastructure used to test those claims.
 interaction. The served path is a single governed agent; a multi-agent
 coordinator with tempo heterogeneity and per-agent audit trails is implemented
 and available behind a config flag, not the default served route. Severity-tier
-human-in-the-loop routing and a cost-aware dispatch interface are served.
+human-in-the-loop routing is served. Dispatch schemas carry budget/tempo/cost
+fields, but real cost-based model selection and budget enforcement are not yet
+exercised end to end.
 
 **keystone-counsel.** Authorization-first retrieval for legal and financial
 advisory content. Classification-aware vector-similarity ACL filtering enforced
 at the database layer. Fail-closed under insufficient authorization or
 insufficient confidence.
 
-**keystone-verify.** Standalone, endpoint-agnostic evaluation harness. Runs
-against HTTP endpoints using structured profiles and assertions. Preserves
-sealed failing runs alongside passing runs so remediation can be evaluated
-against the failure it replaced.
+**keystone-verify.** Standalone, endpoint-agnostic evaluation harness. Produces
+structured evaluation results and run metadata for HTTP-based evaluation using
+structured profiles and assertions. Passing and failing evaluation lineage is
+retained separately in keystone-ledger.
 [View on GitHub →](https://github.com/getkeystone/keystone-verify)
 
-## The shared runtime
+## Shared-substrate mechanisms
 
-All three extensions use the same runtime services rather than rebuilding
-authorization, state, evidence, coordination, and resource controls
-independently.
+The platform uses a shared-substrate design. The current public
+implementations contain related runtime mechanisms at varying degrees of
+maturity; they should not be read as one fully composed runtime service.
+Verify is a standalone evaluation harness that evaluates HTTP endpoints and
+produces evaluation artifacts; it does not run as a workload on this
+substrate.
 
-Six currently implemented services provide that common execution foundation:
+Six currently implemented mechanisms exist across the public repositories, at
+varying degrees of maturity and composition:
 
-- **Agents registry.** A first-class registry of agents, each carrying identity,
-  role, tempo classification, and a cost profile. Every audit entry references a
-  registered agent.
+- **Agents registry.** The registry implementation carries agent identity, role,
+  tempo classification, and cost-profile metadata that can be referenced by
+  runtime records.
 - **Task state machine.** Explicit ownership, validated transitions, and a
-  takeover protocol so long-running tasks stay recoverable rather than silently
-  orphaned.
-- **Hash-chained audit ledger.** Append-only, SHA-256 hash-chained entries (the
-  shared runtime is unkeyed SHA-256; keystone-gov uses a keyed HMAC per record).
-  Each entry chains to the previous one, and `verify_chain` walks the full ledger
-  on replay, so a break in the chain is detectable.
-- **NATS JetStream event bus.** Carries task lifecycle events for observers.
-  This is the observability path, distinct from the request path.
+  takeover protocol are implemented for task recovery. Not every lifecycle
+  mechanism is exercised by the normal served path today.
+- **Hash-chained audit mechanisms.** Engage and Counsel use unkeyed SHA-256
+  hash chaining; keystone-gov uses keyed HMAC-SHA256 per record. These are
+  implementation-specific audit mechanisms rather than evidence of one composed
+  shared audit service.
+- **Optional NATS JetStream integration.** Can carry task lifecycle events for
+  observers in the optional multi-agent/event path. It is off the normal
+  request path and off by default.
 - **Query-time authorization.** Access control enforced before retrieval. Engage
   uses a corpus-scope ACL (role to allowed corpora, fail-closed); Counsel enforces
   a classification and client-isolation `WHERE` clause in the retrieval query, so
   unauthorized rows never return. An MCP server entry point is scaffolded but not
   wired to the served path.
-- **Cost-aware dispatch.** Every dispatch carries a budget and a tempo target;
-  every audit entry records tokens, model, and cost. Dispatch can short-circuit
-  when a budget is exhausted, and the short-circuit is a recorded event.
+- **Cost/budget fields.** Dispatch and audit schemas carry budget, tempo, and
+  cost fields, but real cost-based model selection and budget enforcement are
+  not yet exercised end to end.
 
-These are six implemented runtime services. They are not the six candidate
+These are six implemented runtime mechanisms. They are not the six candidate
 substrate dimensions of the research model (see
 [Engineering platform and research model](#engineering-platform-and-research-model)),
 and should not be read as such.
 
 ## Why this is a platform, not a set of demos
 
-The extensions plug into the shared runtime. They do not each rebuild it.
+The architecture is organized around a shared-substrate design, while the
+current public workload implementations remain separately composed.
 
-Engage, Counsel, and Verify share common identity, task-state, audit, event,
-authorization, and resource services. Adding a workload can therefore reuse
-existing runtime contracts rather than rebuilding those mechanisms from scratch.
+Across the public workload implementations, related runtime governance
+patterns include authorization, audit, task-state mechanisms, and resource
+metadata, but those mechanisms are not uniformly present or composed across
+workloads. The current public repositories should not be interpreted as
+demonstrating a single composed runtime shared by Engage and Counsel. Verify is
+external evaluation infrastructure: it can evaluate compatible HTTP endpoints
+and produce evaluation artifacts; it is not itself a workload running on this
+substrate.
 
 The architecture is designed to reduce dependence on any particular inference
 backend, model provider, or orchestration layer. How well the governance
@@ -130,12 +142,13 @@ candidate dimensions remain hypotheses to test.
 | keystone-engage, governed conversational agent                 | Public  |
 | keystone-gov, governed RAG reference                            | Public  |
 | keystone-counsel, authorization-first retrieval                 | Public  |
-| track-a-runtime-validity, Governed Execution research track     | Public  |
+| runtime-validity, Governed Execution research track (Track A)   | Public  |
 | Deployment configuration and infrastructure detail              | Private |
 
-The architecture, evaluation outcomes, and design rationale are public, and so is
-the source: all five repositories are public. Deployment configuration and
-infrastructure detail remain private.
+The architecture, evaluation outcomes, and design rationale are public: the
+public implementation repositories and documentation/evaluation surfaces are
+inspectable. Deployment configuration and internal infrastructure detail
+remain private.
 [What is public vs private →](access.md)
 
 ## Published evaluation
@@ -143,19 +156,22 @@ infrastructure detail remain private.
 The evaluation ledger is public:
 [keystone-ledger →](https://github.com/getkeystone/keystone-ledger).
 The examples below use the naming convention `keystone-{component}/{type}-v{n}`.
+The `keystone-core/*` identifiers name historical evaluations of a private
+repository; their results are retained and published in keystone-ledger.
 
 | Baseline                       | Result                                          | Status         |
 |--------------------------------|-------------------------------------------------|----------------|
 | keystone-core/retrieval-v1     | P@1=0.75, MRR=0.79, 8/8 adversarial ACL blocked, fail-closed 5/6 (83%) | mixed          |
-| keystone-core/agent-v0         | 186 cases; 9 failing cases, 4 root-cause defects | sealed failing |
+| keystone-core/agent-v0         | 186 cases; 9 failing cases, 4 root-cause defects | retained failing |
 | keystone-core/agent-v1         | 186 cases, 558 executions, 0 failures           | passing        |
 | keystone-engage/agent-v1       | 100/100 (regression 70, architecture 25, edge 5)| passing        |
 
-The sealed failing run is kept on purpose. Preserving the failing baseline next
-to the passing baseline that replaced it provides evidence that the evaluation
-process can surface implementation defects. The retrieval-v1 fail-closed figure
-(83%, 5 of 6) is from the sealed 2026-04-11 baseline; its single miss (FC-005)
-has a demo-grade domain-scope guard merged, with re-verification not yet sealed.
+The retained failing run is preserved alongside the passing baseline. In this
+evaluation lineage, the failing run shows that the evaluation configuration
+detected specific implementation defects that were subsequently corrected and
+re-tested. The retrieval-v1 fail-closed figure (83%, 5 of 6) is from the
+retained 2026-04-11 baseline; its single miss (FC-005) has a demo-grade
+domain-scope guard merged 2026-05-17, with re-verification not yet recorded.
 
 ## Learn more
 
