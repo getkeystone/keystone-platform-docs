@@ -1,145 +1,182 @@
 # keystone-counsel
 
-Authorization-first retrieval for legal and financial advisory content.
-
 ## What it does
 
-Counsel answers advisory queries in regulated environments where content
-authorization is not optional and partial leaks are not acceptable. The
-authorization check lives in the `WHERE` clause of the retrieval query, not in a
-post-retrieval filter in application code. Rows the caller is not permitted to
-see never reach the application.
+Keystone Counsel is an authorization-first retrieval reference implementation
+for legal, financial, and compliance content. Its served FastAPI endpoint checks
+which requested document classifications an advisor may access, retrieves from
+the authorized set under a client-relationship constraint, applies a confidence
+condition, generates locally when sufficient evidence is available, and records
+request and response events.
+
+This is permission enforcement around retrieval. It does not by itself establish
+that a resulting advisory decision is justified. Permission governance asks who
+is allowed to do what. Decision justification asks why this particular decision
+was appropriate for this context, evidence, affected party, and consequence
+level.
 
 ## Authorization model
 
-Two dimensions determine what a query returns:
+Counsel applies two authorization dimensions and one separate retrieval-quality
+condition:
 
-- **Caller authorization**: the caller's role resolves to the set of document
-  classifications it is permitted to see. That set constrains the query.
-- **Confidence threshold**: a chunk must clear a minimum similarity score to be
-  returned. Below threshold, the system refuses rather than guessing.
+- **Role and classification.** An in-process access matrix maps each advisor
+  role and document classification to access for any client, access for the
+  advisor's own clients, or denial. Unknown advisors and denied combinations
+  return no authorized classification.
+- **Client relationship.** Global records are eligible for an authorized caller.
+  A client-specific record is eligible only when its client identifier matches
+  the client context supplied to retrieval. With no client context, only global
+  records are eligible.
+- **Confidence.** After authorized retrieval, the best similarity result must
+  meet the configured confidence threshold. Confidence is a retrieval-quality
+  condition, not an authorization decision.
 
-The critical property: a bug in the orchestrator, a prompt injection, or a
-hallucinated citation cannot leak content the caller is not permitted to see,
-because the query never returned it. Enforcement does not depend on downstream
-code behaving correctly.
+The current application registers demo advisor profiles in process. The
+implementation therefore does not establish production authentication, correct
+caller identity, or correctness of the access policy for a particular
+deployment.
 
-## Why enforcement lives at the database layer
+## Why authorization is applied during retrieval
 
-Most retrieval systems filter after the fact: fetch candidates, then drop the
-ones the caller should not see in application code. That design has a standing
-failure mode. Any component between the fetch and the filter (an orchestrator
-bug, an injected instruction, a model that fabricates a citation) can surface
-content that was retrieved but should have been withheld. The unauthorized rows
-were in memory; something only had to fail to omit them.
+On the PostgreSQL path, classification and client predicates constrain the rows
+eligible for vector ranking. Records excluded by those predicates are not
+returned through that retrieval query. On the in-memory development and test
+path, equivalent filtering runs before cosine scoring.
 
-Counsel closes that gap by making authorization part of the query. Unauthorized
-rows are never selected, so they are never in the application's memory to leak.
-There is no post-retrieval filter to bypass, because there is nothing to filter
-out.
+This placement reduces the set of records exposed to later generation code. It
+does not establish the absence of other data paths, complete system
+confidentiality, semantic correctness, or correct authorization inputs.
 
-## The filter, at the layer that matters
+## Retrieval predicate
 
-The ACL predicate is part of the retrieval query itself. The caller's authorized
-classifications constrain the candidate rows **before** similarity ranking, so an
-unauthorized row is never a candidate.
+The PostgreSQL implementation has a classification-filtered branch and a branch
+without a classification filter. Both apply the client constraint. The
+following is an illustrative shape of the filtered branch:
 
-The snippet below is an **illustrative shape**, not the production query. Real
-column names, operators, tuned thresholds, and the full schema are omitted.
+    SELECT content, classification, client_id
+    FROM chunks
+    WHERE classification = ANY(:authorized_classifications)
+      AND (client_id IS NULL OR client_id = :caller_client_id)
+    ORDER BY embedding <=> :query_embedding
+    LIMIT :k;
 
-```sql
--- ILLUSTRATIVE SHAPE, not the production query.
-SELECT id, content, classification
-FROM   documents
-WHERE  classification = ANY(:caller_authorized_classifications)  -- ACL lives here
-  AND  embedding <=> :query_embedding < :distance_threshold       -- confidence as a bind param
-ORDER BY embedding <=> :query_embedding
-LIMIT  :k;
-```
+The actual code uses positional bind parameters and selects additional provenance
+fields. When no caller client is supplied, it uses `client_id IS NULL` rather
+than comparing against a missing value. PostgreSQL computes similarity as
+`1 - (embedding <=> query_embedding)`.
 
-Two things to note. First, the ACL is a `WHERE` predicate bound to the caller's
-authorized classifications, not a value the model or the orchestrator can
-influence. Second, the confidence cutoff is a bind parameter, not a literal:
-the actual threshold is tuned and not published.
+## Served request flow
+
+The `/counsel` endpoint currently performs this sequence:
+
+    open request audit entry
+        |
+    resolve requested classifications or the default advisory set
+        |
+    call authorize_retrieval for each classification
+        |
+    if none are authorized: return a fail-closed response
+        |
+    retrieve using authorized classifications and caller client context
+        |
+    if retrieval is unavailable, empty, below confidence, or generation fails:
+    return a fail-closed response
+        |
+    generate locally from retrieved context and build citations
+        |
+    close the audit entry and return the response
+
+When only some requested classifications are authorized, the endpoint continues
+with the authorized subset and records the denied classifications. Local
+generation is reached only after retrieval produces at least one result and the
+best similarity score meets the configured threshold.
 
 ## Fail-closed behavior
 
-Counsel refuses in two cases, and both are refusals rather than guesses:
+The served path returns `fail_closed=true` for defined conditions including:
 
-- **No authorized rows**: the caller is not permitted to see anything relevant
-  to the query. The system returns a refusal and logs an escalation.
-- **Below confidence threshold**: authorized rows exist but none clears the
-  similarity cutoff. The system declines to compose an answer from weak matches.
+- an invalid requested classification;
+- no authorized requested classifications;
+- an unavailable or unready retrieval pipeline;
+- embedding failure;
+- no records returned from the authorized retrieval set;
+- a best similarity score below the confidence threshold; and
+- local generation failure.
 
-In both cases the audit entry records that no content was disclosed. A refusal
-is the safe outcome; a fabricated or partially-authorized answer is not.
+The no-authorization response contains no citations. Some retrieval-quality
+failures may include provenance for the authorized chunks that were retrieved,
+even though no generated answer is returned. These behaviors are application
+responses for defined code paths, not proof of complete system confidentiality.
 
-## Request flow
+## Cross-client regression
 
-```
-caller identity + query
-    |
-    v
-[authorization resolver]
-    -- resolves caller's authorized classifications
-    |
-    v
-[retrieval query with ACL WHERE clause]
-    -- only authorized rows returned
-    -- unauthorized rows never leave the database
-    |
-    v
-[confidence check]
-    -- if no rows or top similarity below threshold: FAIL_CLOSED
-    -- audit entry: authz_denied=true, chunks_leaked=0
-    |
-    v
-[response composition]
-    -- reached only if authorized chunks passed threshold
-    -- citations trace to specific authorized chunks
-    |
-    v
-answer returned
-```
+A prior defect allowed the branch without a classification filter to omit the
+client boundary. The current in-memory regression tests create records for two
+clients plus one global record and exercise both retrieval branches:
 
-## Two callers, same query, different outcomes
+- with a classification filter, each caller receives its own client record and
+  the global record, but not the other client's record;
+- without a classification filter, the other client's record remains excluded;
+  and
+- with no client context, only the global record is returned.
 
-```
-# authorized caller: results returned
-→ authorized results returned (across the caller's permitted classifications)
+The PostgreSQL implementation contains the corresponding client predicate in
+both SQL branches. The regression test directly executes the in-memory store; it
+does not run against a live PostgreSQL service.
 
-# unauthorized caller: fails closed
-→ 0 authorized results
-→ FAIL_CLOSED: refusing to answer; escalation logged
-→ audit_entry: authz_denied=true, chunks_leaked=0
-```
+Client isolation is therefore implemented and regression-tested. The currently
+published corpus is entirely global: the corpus loader creates chunks without a
+client identifier, leaving `client_id` as `NULL`. The published corpus does not
+exercise a real multi-client dataset and is not evidence of a production
+multi-client deployment.
 
-The query is identical. The difference is entirely in what the caller is
-authorized to retrieve, enforced before ranking.
+## Evaluation status
 
-## Published evaluation
+There is no dedicated Counsel evaluation baseline retained in
+[keystone-ledger](https://github.com/getkeystone/keystone-ledger). Historical
+retrieval metrics elsewhere in the Ledger belong to an earlier governed
+retrieval system under test and are not Counsel results.
 
-| Baseline                      | Result                                       |
-|-------------------------------|----------------------------------------------|
-| keystone-core/retrieval-v1    | P@1=0.75, MRR=0.79, 8/8 ACL probes blocked   |
+Counsel contains local evaluation cases and describes a retrieval evaluation in
+its own repository, but those materials are not a Counsel artifact retained in
+the public Ledger. The cross-client regression tests are the current repository
+evidence for client isolation.
 
-There is no sealed counsel evaluation baseline yet; counsel's client isolation
-is covered by the cross-client retrieval regression test, which verifies denial
-on both the classification-filtered and unfiltered paths. The core retrieval
-baseline exercises adversarial ACL probes: eight queries crafted to retrieve
-content the caller is not authorized to see, all blocked at the query layer.
-Runs are executed by the endpoint-agnostic harness, see
-[keystone-verify →](verify.md).
+The current [keystone-verify](verify.md) CLI is a standalone HTTP evaluation
+harness. It uses profiles to call compatible endpoints and writes structured
+results and run metadata. That current tool should not be attributed as the
+producer of historical `keystone-core` artifacts without specific lineage
+evidence.
 
-Eval artifacts: [keystone-ledger →](https://github.com/getkeystone/keystone-ledger)
+## Audit boundary
 
-## Shared runtime dependencies
+Counsel's JSONL and PostgreSQL audit backends use an unkeyed SHA-256 hash chain.
+The `AuditEntry` model includes `prev_hash` and `curr_hash`; its hash covers the
+timestamp, event type, actor, payload, and previous hash. The verifier recomputes
+the chain and reports malformed records, hash mismatches, or previous-hash
+mismatches.
 
-Counsel enforces authorization at the database layer and consumes the shared
-runtime audit chain and cost-aware dispatch. See the
-[substrate model →](../architecture/substrate.md).
+This mechanism can support detection of changes relative to trusted prior state.
+An actor able to rewrite an unanchored store may potentially recompute later
+hashes. The chain does not provide immutable history, independent witnessing,
+semantic correctness, or proof that an authorization decision was valid.
+
+The served request flow records events such as `request.received`,
+`authorization.checked`, `authorization.denied_all`, and `response.generated`.
+The implementation does not define the previously documented
+`authz_denied` or `chunks_leaked` audit fields.
+
+## Relationship to the broader platform
+
+Counsel is a separately composed reference implementation within the Keystone
+engineering platform. Its authorization, retrieval, generation, and audit
+mechanisms are implemented in the Counsel repository. They are engineering
+examples relevant to the broader [system architecture](../architecture/index.md)
+and [substrate research abstraction](../architecture/substrate.md), not evidence
+that Counsel consumes one composed platform audit or dispatch service.
 
 ## Source code
 
-The keystone-counsel source is public:
+The implementation is public at
 [github.com/getkeystone/keystone-counsel](https://github.com/getkeystone/keystone-counsel).
