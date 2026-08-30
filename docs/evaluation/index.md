@@ -24,7 +24,7 @@ independent validation.
 4. **Governance is reported alongside quality.** Accuracy without a governance
    figure is half a result. Severity, fail-closed behavior, and citation presence
    are first-class assertions, not footnotes.
-5. **The current harness is endpoint-agnostic by design** and can target HTTP
+5. **The current harness is profile-driven** and can target compatible HTTP
    endpoints through profiles.
 
 ## Versioned baselines
@@ -90,10 +90,9 @@ reconstructing the relevant software, models, data, and environment.
 
 ## The evaluation framework
 
-[keystone-verify](../extensions/verify.md) is the current standalone,
-endpoint-agnostic evaluation framework for current HTTP-based evaluation work.
-It is open source and can target compatible HTTP endpoints through evaluation
-profiles. The historical
+[keystone-verify](../extensions/verify.md) is the current standalone HTTP
+evaluation harness for compatible endpoints. It is open source and targets
+those endpoints through evaluation profiles. The historical
 `keystone-core/*` artifacts listed above are retained in keystone-ledger and
 should not be assumed to have been produced by the current Verify CLI. The
 current framework provides:
