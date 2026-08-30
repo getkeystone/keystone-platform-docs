@@ -1,9 +1,10 @@
 # What is public vs private
 
-Keystone's six repositories are public: the architecture, evaluation
-methodology, design rationale, and the source. Deployment configuration and
-infrastructure detail remain private. This page states exactly where that line
-sits.
+Keystone's public implementation repositories, documentation, evaluation
+framework, and published ledger are publicly inspectable. Runtime Validity is
+also public as a separate bounded research implementation. Deployment configuration and
+internal infrastructure detail remain private. This page states exactly where
+that line sits.
 
 ## What is public
 
@@ -28,11 +29,11 @@ The following are publicly available and inspectable:
 - **The governed RAG reference implementation**: keystone-gov. Query-time
   RBAC, fail-closed gating, and audit trail source.
   [GitHub →](https://github.com/getkeystone/keystone-gov)
-- **Track A Runtime Validity**: track-a-runtime-validity, a bounded public
+- **Runtime Validity (Track A)**: `runtime-validity`, a bounded public
   research implementation within Governed Execution, Keystone's broader
   runtime-governance research program. Results from Track A are evidence about
   a narrow mechanism, not validation of the broader platform.
-  [GitHub →](https://github.com/getkeystone/track-a-runtime-validity)
+  [GitHub →](https://github.com/getkeystone/runtime-validity)
 - **The platform demo**: the employer-facing platform narrative at
   [getkeystone.ai/platform/](https://getkeystone.ai/platform/).
 

@@ -5,10 +5,9 @@ governed AI platform for regulated enterprises: three extensions on one shared
 substrate, with governance, authorization, and evaluation designed in from the
 first commit.
 
-This repository is documentation, not product code. It explains the platform's
-architecture, extension capabilities, evaluation methodology, and access policy
-in enough depth for a serious technical reader to evaluate the work — without
-exposing the implementation.
+This repository is documentation, not product code. It explains the platform
+architecture, extension capabilities, evaluation methodology, and public/private
+operational boundary alongside the public implementation repositories.
 
 ## What these docs cover
 
@@ -17,20 +16,22 @@ exposing the implementation.
 - **Substrate** — the six shared surfaces every extension consumes.
 - **Extensions** — Engage (governed conversation), Counsel (authorization-first
   retrieval), and Verify (endpoint-agnostic evaluation).
-- **Evaluation** — the methodology, versioned baselines, and the sealed-artifact
+- **Evaluation** — the methodology, versioned baselines, and the retained-artifact
   discipline behind the published numbers.
 - **Design** — the contact-center heritage the governance model is built on.
-- **Access** — what is public, what is private, and how to request read-only
-  technical review.
+- **Access** — what is public, what remains private, and the boundary between
+  public source and private operational detail.
 
 ## What these docs intentionally do not expose
 
-- Source code for the proprietary repositories: `keystone-engage`,
-  `keystone-counsel`, `keystone-gov` (substrate implementation), and
-  `keystone-demo` (deployment).
-- Internal infrastructure: node identifiers, network topology, IP addresses,
-  operator paths, secrets, and deployment-specific configuration.
-- Internal evaluation artifacts not published to the eval ledger.
+- Deployment-specific configuration and deployment repositories (for example,
+  `keystone-demo`).
+- Internal infrastructure identifiers and topology details: node identifiers,
+  network topology, IP addresses, and operator paths.
+- Secrets and authentication configuration.
+- Unpublished internal evaluation artifacts not yet published to the eval
+  ledger.
+- Operational and security details not appropriate for the public surface.
 
 Sanitization is a first-class constraint here: no page contains an internal
 hostname, IP, private path, or secret.
@@ -49,14 +50,21 @@ The theme is MkDocs Material; configuration is in `mkdocs.yml`.
 
 ## How this fits the Keystone public surface
 
-Keystone's public surface has three parts:
+Keystone's public technical surface includes:
 
 1. **This documentation** — the primary explanatory surface (architecture,
    design, evaluation, access).
-2. **[keystone-verify](https://github.com/getkeystone/keystone-verify)** — the
+2. **The public implementation repositories**:
+   [keystone-engage](https://github.com/getkeystone/keystone-engage),
+   [keystone-counsel](https://github.com/getkeystone/keystone-counsel), and
+   [keystone-gov](https://github.com/getkeystone/keystone-gov).
+3. **[keystone-verify](https://github.com/getkeystone/keystone-verify)** — the
    open-source evaluation framework.
-3. **[keystone-ledger](https://github.com/getkeystone/keystone-ledger)** — the
-   published evaluation ledger with sealed artifacts.
+4. **[keystone-ledger](https://github.com/getkeystone/keystone-ledger)** — the
+   published evaluation ledger with retained evaluation artifacts.
+5. **[runtime-validity](https://github.com/getkeystone/runtime-validity)**:
+   Track A, a separate bounded research implementation within Governed
+   Execution.
 
 The platform demo at [getkeystone.ai/platform/](https://getkeystone.ai/platform/)
 is the employer-facing narrative; it links into these docs for architecture and
