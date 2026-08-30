@@ -1,119 +1,157 @@
-# Contact-Center Heritage
+# Contact-center heritage
 
-Every governance mechanism in Keystone traces to a pre-LLM contact-center AI
-pattern, rebuilt for the LLM substrate. The mapping is not a metaphor and not a
-retrofit narrative. These patterns are the actual reason the design choices were
-made, because they were standard operational practice in an industry that ran
-automated conversations at scale years before the current wave of agents.
+Keystone's design is informed by experience with enterprise contact-center and
+cloud systems. Routing, escalation, observability, incident handling, access
+control, controlled change, and operational evidence all have useful precedents
+in that domain.
 
-## Why this is a lineage, not a metaphor
+This is design heritage, not proof that every Keystone mechanism derives from
+one contact-center pattern or that language-model systems are contact-center
+systems with a model added. The mapping below is an engineering interpretation
+of transferable practices.
 
-Enterprise contact-center AI had to do a specific, unglamorous job: run
-high-volume automated conversations under regulatory, financial, and
-reputational constraints, with human agents on the hook for every outcome the
-bot could not safely own.
+## Practices that transfer
 
-That job forced a set of solutions long before "agent safety" was a phrase:
+Enterprise interaction systems make several operational concerns explicit:
 
-- Automated interactions had to hand off to a human the moment confidence
-  dropped, and the handoff had to preserve context.
-- Every automated action against a customer record had to be logged in a form
-  an auditor or regulator could later inspect.
-- A deployment that could not prove what it did, to whom, and why did not ship.
+- work must be routed to a destination under defined conditions;
+- escalation needs a trigger, an owner, and enough context to continue;
+- failures need observable states and recovery procedures;
+- access decisions need deterministic enforcement points;
+- changes need deployment, rollback, and incident plans; and
+- records need enough context for later technical investigation.
 
-Those were operational requirements, not research questions. The LLM era is now
-rediscovering the same requirements from first principles. Keystone does not
-rediscover them. It ports the practice to a substrate where the reasoning step
-is a language model instead of a hand-built dialog engine.
+These concerns also appear in AI systems, but their implementations and evidence
+boundaries differ.
 
-## Pattern mapping
+## Bounded pattern mapping
 
-| Keystone pattern                          | Contact-center origin                                |
-|-------------------------------------------|------------------------------------------------------|
-| Severity-tier HITL routing                | Bot-to-human escalation with severity classification |
-| Per-step evidence gating                  | Frame-based dialog slot validation                   |
-| Hash-chained action audit chain           | Contact-center compliance logging                    |
-| Fail-closed at retrieval                  | Confidence-threshold escalation in bot deployments   |
-| Published failing run next to passing run | Contact-center quality management                    |
-| Local-first deployment with local models  | Regulated contact-center deployment reality          |
+| Keystone concern | Contact-center precedent | Important boundary |
+|---|---|---|
+| Severity and escalation outcomes | Bot-to-human routing and queue escalation | A structured escalation response does not prove that a qualified human accepted the work or exercised meaningful oversight |
+| Evidence and confidence conditions | Intent confidence, knowledge lookup, and dialog validation | Generated answers and retrieved evidence introduce failure modes beyond deterministic slot validation |
+| Retrieval authorization | Role, queue, and customer-context access controls | Keystone workloads use different authorization models; one mapping does not establish universal policy correctness |
+| Task ownership and recovery | Interaction ownership, timeout handling, and operational recovery | Engage mechanisms do not establish distributed lease or fencing guarantees |
+| Audit and observability | Interaction logs, traces, and compliance records | Logs and hash integrity do not prove semantic correctness, authorization validity, or immutable history |
+| Evaluation and quality review | Quality-management review of successful and failed interactions | Retained internal evaluation is not independent validation or evidence of generality |
+| Local inference options | Customer-controlled and hybrid deployment patterns | Local inference is an implementation option, not a universal requirement or proof of current deployment |
 
-### How each pattern maps
+## Routing and escalation
 
-**Severity-tier HITL routing ← bot-to-human escalation with severity
-classification.** Contact-center bots classified each interaction and routed it:
-low-severity paths stayed automated, high-severity paths went to a human with
-the transcript attached. Keystone applies the same triage to agent actions.
-Human-in-the-loop is not a global on/off switch; it is a routing decision keyed
-to the severity of what the agent is about to do.
+Contact-center systems distinguish normal routing, exceptional routing, and
+escalation. That experience informs the use of explicit severity outcomes and
+handoff conditions in conversational-agent workflows.
 
-**Per-step evidence gating ← frame-based dialog slot validation.** Slot-filling
-dialog systems refused to advance until each required slot held a validated
-value. An agent could not "book the flight" before it had a confirmed date,
-destination, and passenger. Keystone gates each step of an agent's plan the same
-way: a step does not execute until the evidence it depends on is present and
-checked.
+The analogy has limits. In Engage, severity and escalation fields are
+implemented application outcomes. They do not by themselves establish that an
+external operator received the task, had appropriate authority and context, or
+changed the result. Human presence is not automatically meaningful oversight.
 
-**Hash-chained action audit chain ← contact-center compliance logging.** Regulated
-contact centers logged every automated action against a customer record in a
-form that could be reconstructed and inspected. Keystone hardens that into an
-append-only, hash-chained audit ledger: each entry carries the hash of the entry
-before it, so tampering breaks the chain and is detectable on replay.
+## Evidence conditions
 
-**Fail-closed at retrieval ← confidence-threshold escalation.** When a bot's
-retrieval or intent confidence fell below threshold, it did not guess. It
-escalated. Keystone makes the retrieval boundary fail-closed for the same
-reason: if the system cannot ground an answer in authorized evidence, the safe
-default is to withhold and escalate, not to improvise.
+Earlier dialog systems often required specific values before advancing a
+workflow. Retrieval-augmented generation has a related need to check whether
+evidence is available and sufficiently relevant before generating an answer.
 
-**Published failing run next to passing run ← contact-center quality
-management.** Contact-center quality programs did not archive only the calls that
-went well. They reviewed the failures next to the successes, because the failures
-were where the improvement lived. Keystone publishes evaluation baselines the
-same way: a sealed failing run sits beside the passing run it was fixed into, so
-the record shows what broke and what changed, not only the green result.
+The mechanisms are not equivalent. Language-model output is probabilistic,
+retrieval may return semantically related but ineligible evidence, and a scoring
+component may itself fail. Keystone's evidence thresholds and refusal paths are
+engineering responses to those conditions, not a claim that traditional slot
+validation solves model grounding.
 
-**Local-first deployment with local models ← regulated contact-center deployment
-reality.** In regulated industries, the data often could not leave the customer's
-environment, so the AI had to run where the data lived. Keystone treats
-local-first deployment with local models as the default posture for the same
-reason: sensitive workloads run in the environment that owns the data, not on a
-path that exports it.
+## Authorization boundaries
+
+Role and context have long affected which interactions, records, or tools an
+operator may access. Keystone applies that general discipline at retrieval
+boundaries, but each workload implements it differently:
+
+- Gov uses role, domain, and jurisdiction retrieval constraints.
+- Counsel uses role and classification constraints plus client relationship
+  isolation.
+- Engage uses corpus-scope authorization.
+
+These implementations test bounded authorization mechanisms. They do not
+establish correct authentication, correct policy for a deployment, absence of
+alternative data paths, or decision justification.
+
+Permission governance asks who is allowed to do what. Decision justification
+asks why this particular decision was appropriate for this context, evidence,
+affected party, and consequence level.
+
+## Audit and operational evidence
+
+Operational systems benefit from records that help reconstruct a request,
+decision, failure, or recovery. Engage and Counsel use unkeyed SHA-256 hash
+chains, while Gov uses a keyed HMAC-SHA256 value per record with different field
+coverage.
+
+These mechanisms provide different integrity properties. A hash chain can
+support detection of changes relative to trusted prior state, but an actor able
+to rewrite an unanchored store may potentially recompute later hashes. Neither a
+hash nor a log establishes semantic correctness, valid authorization,
+independent witnessing, or immutable history.
+
+## Evaluation as engineering evidence
+
+Contact-center quality practices reinforce the value of reviewing failures
+instead of retaining only successful examples. Keystone-ledger similarly retains
+selected passing and failing internal evaluation artifacts and their lineage.
+
+The conclusion must remain bounded. A retained failing run can show that a
+particular evaluation configuration detected particular defects in an evaluated
+implementation. It does not prove that the methodology generally finds defects.
+A passing run belongs to its evaluated commit, cases, and configuration and is
+not independent validation.
+
+## What language-model systems change
+
+Several AI-specific properties require new mechanisms:
+
+- model output is probabilistic and sensitive to prompt and context;
+- retrieval quality affects which claims can be supported;
+- unsupported generation can remain fluent;
+- tool-using agents can turn generated output into external consequence;
+- state accumulates across multi-step workflows;
+- deterministic unit tests do not cover the full behavior; and
+- authority or justification may change between planning and execution.
+
+These differences are why contact-center experience is an input to the design,
+not a complete architecture for governed execution.
+
+## Relationship to Governed Execution
+
+Governed Execution is the umbrella research program. Its architecture separates
+a control plane, an execution plane, an evidence plane, and a distinct action
+boundary. The candidate substrate dimensions of Identity, Task state, Tempo,
+Cost, Currency, and Fidelity are research hypotheses rather than a complete
+ontology.
+
+Orchestration determines how work proceeds. Governance determines whether the
+intended consequence remains justified to proceed.
+
+Runtime Validity, identified as Track A, is a bounded reference implementation
+within that program. Its current process-local authority-change demonstration
+does not establish authentic external revocation, production authentication or
+authorization, durable persistence, independent witnessing, or real
+external-consequence enforcement.
 
 ## The builder's background
 
-Keystone is built by an engineer with 12+ years at Genesys building enterprise
-contact-center and cloud systems, including Knowledge Center retrieval,
-the chat suite, e-services, and contact analytics. That was the pre-LLM era of
-conversational AI: the systems that had to be auditable, escalatable, and safe
-to run against real customers before large language models existed.
+The design perspective is informed by 12+ years of enterprise contact-center and
+cloud-systems work at Genesys, including production investigation, escalation,
+routing, integrations, migrations, and operational documentation, followed by
+hands-on AI engineering since late 2024.
 
-The six patterns above were not invented for Keystone. They were the daily
-engineering reality of shipping conversational AI into regulated enterprises.
-Keystone carries that reality forward.
+That experience supports the design interpretation on this page. It is not
+evaluation evidence for Keystone's implementation claims.
 
-More on the builder: [arnaldosepulveda.com](https://arnaldosepulveda.com) ·
+More on the builder:
+[arnaldosepulveda.com](https://arnaldosepulveda.com) ·
 [linkedin.com/in/arnaldosepulveda](https://linkedin.com/in/arnaldosepulveda)
-
-## What the LLM substrate changed
-
-The substrate changed; the discipline did not.
-
-The reasoning step is now a language model, nondeterministic, capable of tool
-use, and grounded in retrieval rather than a hand-authored dialog tree. That
-raises the stakes on every one of the patterns above, because a model will
-confidently attempt actions a slot-filling engine never could. It does not make
-the patterns obsolete. It makes them mandatory.
-
-So Keystone keeps the mechanisms and rebuilds their implementation for the new
-substrate: severity routing over agent actions, evidence gating over generated
-plans, a hash-chained ledger over governed actions, fail-closed retrieval over model
-grounding, published failing runs over the evaluation suite, and local-first
-deployment over sensitive data. The LLM era needs this rigor. Rediscovering it
-from scratch is unnecessary.
 
 ## Related
 
-- [The substrate model →](../architecture/substrate.md)
-- [Evaluation methodology →](../evaluation/index.md)
-- [Escalation and human-in-the-loop routing →](../extensions/engage.md)
-- [What is public vs private →](../access.md)
+- [The substrate model](../architecture/substrate.md)
+- [Evaluation methodology](../evaluation/index.md)
+- [keystone-engage](../extensions/engage.md)
+- [What is public vs private](../access.md)
