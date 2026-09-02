@@ -1,13 +1,14 @@
 # Keystone Applied Intelligence
 
 **Keystone Applied Intelligence** is the independent engineering and R&D
-practice of Arnaldo Sepulveda. Keystone's engineering platform (documented on
-this site) contains implemented runtime mechanisms and applied workloads. **Governed Execution** is the broader runtime-governance research
-program and reference platform that this engineering work feeds into.
-**Runtime Validity (Track A)** ([GitHub](https://github.com/getkeystone/runtime-validity))
-is a bounded public research implementation within Governed Execution; it does
-not validate the broader platform. This distinction is used consistently
-throughout these docs.
+practice of Arnaldo Sepulveda. This site documents Keystone's implemented
+runtime mechanisms and applied workloads. **Governed Execution** is the
+broader runtime-governance research program that this engineering work feeds
+into. **Runtime Validity (Track A)**
+([GitHub](https://github.com/getkeystone/runtime-validity)) is the bounded
+reference implementation within Governed Execution; it does not validate the
+broader research program. This distinction is used consistently throughout
+these docs.
 
 Keystone is an independent engineering and R&D practice for building and
 evaluating governed AI systems in regulated and high-consequence environments.
@@ -16,7 +17,7 @@ The work focuses on the runtime layer between model capability and production
 consequence: authorization, task state, evidence, evaluation, auditability,
 observability, and fail-closed behavior.
 
-The engineering platform is built on a shared-substrate design, with
+Keystone's engineering work explores a shared-substrate design direction, with
 authorization, execution state, audit evidence, and evaluation designed into
 the architecture rather than added only at the application boundary.
 
@@ -85,7 +86,7 @@ substrate dimensions of the research model (see
 [Engineering platform and research model](#engineering-platform-and-research-model)),
 and should not be read as such.
 
-## Why this is a platform, not a set of demos
+## Relationship among the implementations
 
 The architecture is organized around a shared-substrate design, while the
 current public workload implementations remain separately composed.
@@ -113,9 +114,9 @@ design for LLM-based systems. See [contact-center heritage →](design/heritage.
 Keystone distinguishes the implemented runtime from the research model being
 developed around it.
 
-The implemented runtime contains concrete services such as agent registration,
-task state, authorization, event coordination, audit evidence, evaluation, and
-model dispatch.
+The current Keystone repositories contain concrete mechanisms such as agent
+registration, task state, authorization, event coordination, audit evidence,
+evaluation, and model dispatch, attributed to their workload above.
 
 The working research architecture, *Governed Execution as a Runtime Contract*,
 proposes identity, task state, tempo, cost, currency, and fidelity as candidate

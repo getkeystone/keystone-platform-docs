@@ -1,7 +1,8 @@
 site_name: Keystone Applied Intelligence — Documentation
 site_description: >-
-  Governed AI platform for regulated enterprises. Architecture, extensions,
-  evaluation methodology, and access policy — the public documentation surface.
+  Engineering documentation for Keystone Applied Intelligence: retrieval,
+  conversational AI, evaluation, implementation boundaries, and bounded
+  runtime-governance research.
 site_url: https://docs.getkeystone.ai/
 
 theme:

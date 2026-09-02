@@ -74,8 +74,11 @@ repositories do not establish NATS as a deployed service shared across Keystone
 workloads.
 
 OpenTelemetry instrumentation is implemented independently of that deployment
-claim and records application spans and selected agent, model, token, latency,
-cost, and budget attributes when values are supplied.
+claim and records application spans plus agent, model, token, and latency
+attributes on the served LLM call. Cost and budget substrate attributes are
+defined in a separate helper function, but that function has no caller in the
+served or Coordinator code path today, so cost and budget do not currently
+appear on spans.
 
 ## Cost and budget boundary
 

@@ -1,19 +1,30 @@
 # keystone-platform-docs
 
-The public documentation surface for **Keystone Applied Intelligence** — a
-governed AI platform for regulated enterprises: three extensions on one shared
-substrate, with governance, authorization, and evaluation designed in from the
-first commit.
+The public documentation surface for **Keystone Applied Intelligence**, an
+independent AI engineering and R&D practice building and evaluating retrieval,
+conversational AI, evaluation, and runtime-control reference systems.
 
-This repository is documentation, not product code. It explains the platform
-architecture, extension capabilities, evaluation methodology, and public/private
+The current public projects fall into four categories: workload implementations
+(keystone-engage, keystone-counsel, keystone-gov), standalone evaluation
+infrastructure (keystone-verify), retained evaluation evidence
+(keystone-ledger), and research abstractions (the Governed Execution substrate
+model). They contain related engineering mechanisms, but they are separately
+composed and do not currently consume one demonstrated shared runtime.
+Governed Execution is a separate runtime-governance research program that this
+engineering work feeds into; Runtime Validity is Track A, its bounded public
+reference implementation.
+
+This repository is documentation, not product code. It explains the current
+implementations, extension capabilities, evaluation methodology, and public/private
 operational boundary alongside the public implementation repositories.
 
 ## What these docs cover
 
 - **Architecture** — the layered model (extensions → substrate → infrastructure)
   and the design principles that carry the platform's identity.
-- **Substrate** — the six shared surfaces every extension consumes.
+- **Substrate model**: a research abstraction describing candidate
+  governance-relevant runtime dimensions, not six shared services that every
+  extension consumes.
 - **Extensions** — Engage (governed conversation), Counsel (authorization-first
   retrieval), and Verify (endpoint-agnostic evaluation).
 - **Evaluation** — the methodology, versioned baselines, and the retained-artifact
