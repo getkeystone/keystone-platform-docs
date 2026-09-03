@@ -26,7 +26,8 @@ operational boundary alongside the public implementation repositories.
   governance-relevant runtime dimensions, not six shared services that every
   extension consumes.
 - **Extensions** — Engage (governed conversation), Counsel (authorization-first
-  retrieval), and Verify (endpoint-agnostic evaluation).
+  retrieval), and Verify (evaluation for compatible HTTP endpoints through
+  profiles).
 - **Evaluation** — the methodology, versioned baselines, and the retained-artifact
   discipline behind the published numbers.
 - **Design** — the contact-center heritage the governance model is built on.
