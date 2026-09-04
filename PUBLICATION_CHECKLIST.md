@@ -4,6 +4,12 @@ Operational checklist for taking this docs repo public. Nothing here changes
 remote state; it documents the decisions and the exact steps to run when you
 choose to go live.
 
+**Status:** this repo is already live at `docs.getkeystone.ai`. The preflight
+item below about not linking `keystone-engage`/`keystone-counsel`/`keystone-gov`
+is superseded — see `docs/migration-notes.md`: the plan to keep those
+repositories private was reversed, and the published docs intentionally link
+them as public. `keystone-demo` remains private and is correctly not linked.
+
 ## Canonical naming decision
 
 **Canonical repo: `keystone-platform-docs`.**
@@ -49,8 +55,11 @@ The docs are served from a dedicated Cloudflare Pages subdomain,
 operator-safe path. The `/platform/` and org-profile links have been repointed to
 absolute `https://docs.getkeystone.ai/...` URLs (held commits).
 
-`site_url` in `mkdocs.yml` is set to `https://docs.getkeystone.ai/`. The full
-cutover steps are in `DOCS_DOMAIN_CUTOVER_PLAN.md` (release-ops working area).
+`site_url` in `mkdocs.yml` is set to `https://docs.getkeystone.ai/`, and the
+site is already live there. (An earlier draft of this checklist referenced a
+`DOCS_DOMAIN_CUTOVER_PLAN.md` in a release-ops working area; that file does not
+exist in this repo — the cutover is already complete, so there is nothing to
+link.)
 
 ## Preflight — before the first public push
 
@@ -63,8 +72,12 @@ cutover steps are in `DOCS_DOMAIN_CUTOVER_PLAN.md` (release-ops working area).
 - [ ] `.venv/` and `site/` are not tracked (both are gitignored).
 - [ ] `docs/migration-notes.md` is excluded from the built site (it is, via
       `exclude_docs`) — confirm `site/migration-notes/` does not exist after build.
-- [ ] No links to `keystone-engage`, `keystone-counsel`, `keystone-gov`, or
-      `keystone-demo` as public GitHub destinations in any published page.
+- [x] ~~No links to `keystone-engage`, `keystone-counsel`, `keystone-gov`, or
+      `keystone-demo` as public GitHub destinations in any published page.~~
+      Superseded: `keystone-engage`, `keystone-counsel`, and `keystone-gov` are
+      intentionally linked as public repositories (see
+      `docs/migration-notes.md`). Only `keystone-demo` remains private and
+      should stay unlinked.
 - [ ] `site_url` in `mkdocs.yml` matches the chosen deploy base.
 
 ## Post-deploy verification
