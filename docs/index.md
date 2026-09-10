@@ -26,6 +26,20 @@ under explicit authority, evidence, and review constraints: customer
 interaction, controlled retrieval and advisory workflows, and the evaluation
 infrastructure used to test those claims.
 
+## Operational intelligence before implementation
+
+Keystone's engineering work addresses how Applied AI mechanisms are built and
+evaluated once an intervention is justified. A related part of the broader
+Keystone portfolio asks the upstream question: what should actually change in
+the operation, and does that change require AI?
+
+[Support Operations Intelligence](https://github.com/arnaldosepulveda/support-operations-intelligence)
+is the separate public research and portfolio project where that operational
+analysis is being developed. It is maintained by Arnaldo Sepulveda and is not
+an implemented Keystone platform component.
+
+[Operational Intelligence →](operational-intelligence.md)
+
 ## The three extensions
 
 **keystone-engage.** Governed conversational agent for regulated customer
@@ -177,6 +191,7 @@ domain-scope guard merged 2026-05-17, with re-verification not yet recorded.
 ## Learn more
 
 - [System architecture →](architecture/index.md)
+- [Operational Intelligence →](operational-intelligence.md)
 - [Extensions overview →](extensions/index.md)
 - [Evaluation methodology →](evaluation/index.md)
 - [What is public vs private →](access.md)
