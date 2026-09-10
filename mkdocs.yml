@@ -1,8 +1,8 @@
 site_name: Keystone Applied Intelligence — Documentation
 site_description: >-
-  Engineering documentation for Keystone Applied Intelligence: retrieval,
-  conversational AI, evaluation, implementation boundaries, and bounded
-  runtime-governance research.
+  Engineering documentation for Keystone Applied Intelligence: operational
+  intelligence, retrieval, conversational AI, evaluation, implementation
+  boundaries, and bounded runtime-governance research.
 site_url: https://docs.getkeystone.ai/
 
 theme:
@@ -37,6 +37,7 @@ exclude_docs: |
 
 nav:
   - Overview: index.md
+  - Operational Intelligence: operational-intelligence.md
   - Architecture:
       - Overview: architecture/index.md
       - Substrate model: architecture/substrate.md

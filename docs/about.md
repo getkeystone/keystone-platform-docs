@@ -10,6 +10,14 @@ retrieval, evaluation, and runtime-governance research. These repositories
 contain related runtime mechanisms, but they should not be interpreted as one
 fully composed production runtime.
 
+Keystone's broader applied direction also includes the upstream operational
+question: what operational problem has actually been established, what
+intervention is justified, and whether AI belongs in that intervention.
+[Support Operations Intelligence](operational-intelligence.md) is the separate
+public research and portfolio project where that operational-analysis direction
+is currently being developed. It is not a Keystone product or implemented
+platform service.
+
 The engineering approach is influenced by more than a decade of work with
 enterprise contact-center systems, where routing, escalation, access control,
 observability, incident handling, and controlled change are operational
@@ -29,8 +37,10 @@ patterns that motivated parts of the platform design.
 
 ## How to navigate these docs
 
-Start with [Architecture](architecture/index.md) for the engineering architecture
-and the [substrate model](architecture/substrate.md) for the separate research
+Start with [Operational Intelligence](operational-intelligence.md) for the
+upstream evidence-to-intervention discipline. Continue to
+[Architecture](architecture/index.md) for the engineering architecture and the
+[substrate model](architecture/substrate.md) for the separate research
 abstraction.
 
 [Extensions](extensions/index.md) covers the current public capabilities:

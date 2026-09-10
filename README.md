@@ -1,25 +1,38 @@
 # keystone-platform-docs
 
-The public documentation surface for **Keystone Applied Intelligence**, an
-independent AI engineering and R&D practice building and evaluating retrieval,
-conversational AI, evaluation, and runtime-control reference systems.
+The public documentation surface for the broader **Keystone Applied
+Intelligence** portfolio. That portfolio spans upstream operational
+intelligence, Applied AI workload implementations, standalone evaluation
+infrastructure, retained evaluation evidence, and runtime-governance research.
 
-The current public projects fall into four categories: workload implementations
-(keystone-engage, keystone-counsel, keystone-gov), standalone evaluation
-infrastructure (keystone-verify), retained evaluation evidence
-(keystone-ledger), and research abstractions (the Governed Execution substrate
-model). They contain related engineering mechanisms, but they are separately
-composed and do not currently consume one demonstrated shared runtime.
+[Support Operations Intelligence](https://github.com/arnaldosepulveda/support-operations-intelligence)
+is the upstream public research and portfolio project examining operational
+evidence, analytical discipline, workflow diagnosis, intervention selection,
+and whether AI is warranted. It is maintained separately by Arnaldo Sepulveda
+and is not an implemented Keystone platform component. Keystone's public
+workload implementations, evaluation infrastructure, and Governed Execution
+research address how selected AI mechanisms are built, evaluated, and governed.
+
+Keystone's current public engineering projects fall into four categories:
+workload implementations (keystone-engage, keystone-counsel, keystone-gov),
+standalone evaluation infrastructure (keystone-verify), retained evaluation
+evidence (keystone-ledger), and research abstractions (the Governed Execution
+substrate model). They contain related engineering mechanisms, but they are
+separately composed and do not currently consume one demonstrated shared runtime.
 Governed Execution is a separate runtime-governance research program that this
 engineering work feeds into; Runtime Validity is Track A, its bounded public
 reference implementation.
 
-This repository is documentation, not product code. It explains the current
-implementations, extension capabilities, evaluation methodology, and public/private
-operational boundary alongside the public implementation repositories.
+This repository is documentation, not product code. It explains the upstream
+operational-intelligence direction, current implementations, extension
+capabilities, evaluation methodology, and public/private operational boundary
+alongside the relevant public repositories.
 
 ## What these docs cover
 
+- **Operational Intelligence**: the evidence-to-intervention discipline used to
+  establish what should change and whether Applied AI is warranted. This is an
+  upstream research direction, not a Keystone extension.
 - **Architecture** — the layered model (extensions → substrate → infrastructure)
   and the design principles that carry the platform's identity.
 - **Substrate model**: a research abstraction describing candidate
@@ -66,15 +79,18 @@ Keystone's public technical surface includes:
 
 1. **This documentation** — the primary explanatory surface (architecture,
    design, evaluation, access).
-2. **The public implementation repositories**:
+2. **[Support Operations Intelligence](https://github.com/arnaldosepulveda/support-operations-intelligence)**:
+   a separately maintained public research and portfolio project for upstream
+   operational diagnosis and intervention selection.
+3. **The public implementation repositories**:
    [keystone-engage](https://github.com/getkeystone/keystone-engage),
    [keystone-counsel](https://github.com/getkeystone/keystone-counsel), and
    [keystone-gov](https://github.com/getkeystone/keystone-gov).
-3. **[keystone-verify](https://github.com/getkeystone/keystone-verify)** — the
+4. **[keystone-verify](https://github.com/getkeystone/keystone-verify)** — the
    open-source evaluation framework.
-4. **[keystone-ledger](https://github.com/getkeystone/keystone-ledger)** — the
+5. **[keystone-ledger](https://github.com/getkeystone/keystone-ledger)** — the
    published evaluation ledger with retained evaluation artifacts.
-5. **[runtime-validity](https://github.com/getkeystone/runtime-validity)**:
+6. **[runtime-validity](https://github.com/getkeystone/runtime-validity)**:
    Track A, a separate bounded research implementation within Governed
    Execution.
 
@@ -101,4 +117,3 @@ catch-all). The platform page and org profile link to absolute
 `https://docs.getkeystone.ai/...` URLs. See
 [`PUBLICATION_CHECKLIST.md`](PUBLICATION_CHECKLIST.md) for the deployment steps and
 the preflight (including removing internal-only files) before the first deploy.
-
