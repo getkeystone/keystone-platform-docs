@@ -49,7 +49,7 @@ to a retained artifact with its full case set and raw results.
 |-------------------------------|-------------------|---------------------------------------------------------|----------------|
 | keystone-core/retrieval-v1    | retrieval         | P@1 0.75, MRR 0.79, 8/8 adversarial ACL blocked, fail-closed 5/6 (83%) | mixed          |
 | keystone-core/agent-v0        | agent             | 186 cases; 9 failing cases, 4 root-cause defects        | retained failing |
-| keystone-core/agent-v1        | agent (canonical) | 186 cases, 558 executions, 0 failures                  | passing        |
+| keystone-core/agent-v1        | agent (canonical) | A retained internal evaluation of keystone-core/agent-v1 used 186 cases across 12 categories and 558 executions. At keystone-gov commit ff66368 the run produced 144 strict passes, 9 strict failures, and 33 characterization cases; the failures traced to four implementation defects, which were fixed. At commit 6ac192a the same cases produced 153 strict passes and 33 characterization cases. Results apply only to the evaluated commits, configurations, and cases, and are not independent validation. | passing        |
 | keystone-engage/agent-v1      | engage baseline   | 100/100 (regression 70, architecture 25, edge 5)       | passing        |
 
 The retrieval baseline reports access-control behavior as a first-class metric:
