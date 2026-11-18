@@ -1,7 +1,7 @@
 # Keystone Applied Intelligence
 
-**Keystone Applied Intelligence** is the independent engineering and R&D
-practice of Arnaldo Sepulveda. This site documents Keystone's implemented
+**Keystone Applied Intelligence** is the independent, non-commercial applied AI
+and research work of Arnaldo Sepulveda, done part time on his own time. This site documents Keystone's implemented
 runtime mechanisms and applied workloads. **Governed Execution** is the
 broader runtime-governance research program that this engineering work feeds
 into. **Runtime Validity (Track A)**
@@ -10,8 +10,14 @@ reference implementation within Governed Execution; it does not validate the
 broader research program. This distinction is used consistently throughout
 these docs.
 
-Keystone is an independent engineering and R&D practice for building and
-evaluating governed AI systems in regulated and high-consequence environments.
+!!! note "Current focus"
+
+    Current focus: operational workflows in buildings. The first lab project is a heating-plant simulation, in progress, to produce realistic operating data for testing maintenance workflows. The earlier reference systems (retrieval, conversational workflows, evaluation and runtime controls) remain public with their evidence and limits.
+
+Keystone does not offer services or products and has no clients. The repositories, documentation and evidence are published for review and learning.
+
+The applied AI work includes building and evaluating governed AI systems in
+regulated and high-consequence environments.
 
 The work focuses on the runtime layer between model capability and production
 consequence: authorization, task state, evidence, evaluation, auditability,

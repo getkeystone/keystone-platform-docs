@@ -1,10 +1,16 @@
 # About Keystone Applied Intelligence
 
-Keystone Applied Intelligence is an independent AI engineering and R&D practice
-focused on enterprise AI systems where authorization, evidence, evaluation,
+Keystone Applied Intelligence is the independent, non-commercial applied AI and research work of Arnaldo Sepulveda, done part time on his own time.
+The work focuses on enterprise AI systems where authorization, evidence, evaluation,
 failure handling, and operational state matter alongside model capability.
 
-The public engineering work includes separately composed implementations for
+## Current focus
+
+Current focus: operational workflows in buildings. The first lab project is a heating-plant simulation, in progress, to produce realistic operating data for testing maintenance workflows. The earlier reference systems (retrieval, conversational workflows, evaluation and runtime controls) remain public with their evidence and limits.
+
+Keystone does not offer services or products and has no clients. The repositories, documentation and evidence are published for review and learning.
+
+The public applied AI work includes separately composed implementations for
 governed retrieval, conversational-agent workflows, authorization-aware
 retrieval, evaluation, and runtime-governance research. These repositories
 contain related runtime mechanisms, but they should not be interpreted as one
@@ -69,11 +75,4 @@ Execution**. Its bounded public reference implementation is
 
 ## Where to go next
 
-For the employer-facing engineering narrative and a walkthrough of the current
-platform work, see
-[getkeystone.ai/platform/](https://getkeystone.ai/platform/).
-
-Keystone is independent engineering and research work. For technical review or
-hiring conversations, see
-[arnaldosepulveda.com](https://arnaldosepulveda.com) or
-[LinkedIn](https://linkedin.com/in/arnaldosepulveda).
+For the platform overview and a walkthrough of the reference systems, see [getkeystone.ai/platform](https://getkeystone.ai/platform/). For background on the author, see [arnaldosepulveda.com](https://arnaldosepulveda.com).

@@ -140,7 +140,7 @@ external-consequence enforcement.
 The design perspective is informed by 12+ years of enterprise contact-center and
 cloud-systems work at Genesys, including production investigation, escalation,
 routing, integrations, migrations, and operational documentation, followed by
-hands-on AI engineering since late 2024.
+hands-on applied AI work since late 2024.
 
 That experience supports the design interpretation on this page. It is not
 evaluation evidence for Keystone's implementation claims.

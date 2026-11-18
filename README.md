@@ -95,7 +95,7 @@ Keystone's public technical surface includes:
    Execution.
 
 The platform demo at [getkeystone.ai/platform/](https://getkeystone.ai/platform/)
-is the employer-facing narrative; it links into these docs for architecture and
+is the platform overview; it links into these docs for architecture and
 extension detail. See [`docs/migration-notes.md`](docs/migration-notes.md) for
 how the platform page should reference this site.
 
