@@ -34,7 +34,7 @@ The following are publicly available and inspectable:
   runtime-governance research program. Results from Track A are evidence about
   a narrow mechanism, not validation of the broader platform.
   [GitHub →](https://github.com/getkeystone/runtime-validity)
-- **The platform demo**: the employer-facing platform narrative at
+- **The platform demo**: the platform overview at
   [getkeystone.ai/platform/](https://getkeystone.ai/platform/).
 
 ## What is private
